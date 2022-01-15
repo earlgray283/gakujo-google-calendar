@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	//"io/ioutil"
 	"log"
 	"net/http"
@@ -19,35 +18,41 @@ import (
 )
 
 // Retrieve a token, saves the token, then returns the generated client.
-func getClient(config *oauth2.Config) *http.Client {
+func getClient(config *oauth2.Config) (*http.Client, error) {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
 	tokFile := "token.json"
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
-		tok = getTokenFromWeb(config)
+		tok, err = getTokenFromWeb(config)
+                if err != nil {
+                        fmt.Printf("Unable to get Token")
+                        return nil, err
+                }
 		saveToken(tokFile, tok)
 	}
-	return config.Client(context.Background(), tok)
+	return config.Client(context.Background(), tok), err
 }
 
 // Request a token from the web, then returns the retrieved token.
-func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+func getTokenFromWeb(config *oauth2.Config) (*oauth2.Token, error) {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
 
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
-		log.Fatalf("Unable to read authorization code: %v", err)
+		fmt.Printf("Unable to read authorization code: %v", err)
+                return nil, err
 	}
 
 	tok, err := config.Exchange(context.TODO(), authCode)
 	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
+		fmt.Printf("Unable to retrieve token from web: %v", err)
+                return nil, err
 	}
-	return tok
+	return tok, err
 }
 
 // Retrieves a token from a local file.
@@ -63,14 +68,16 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 }
 
 // Saves a token to a file path.
-func saveToken(path string, token *oauth2.Token) {
+func saveToken(path string, token *oauth2.Token) error{
 	fmt.Printf("Saving credential file to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
+		fmt.Printf("Unable to cache oauth token: %v", err)
+                return err
 	}
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
+        return nil
 }
 
 func login() (*calendar.Service, error) {
@@ -78,7 +85,7 @@ func login() (*calendar.Service, error) {
 	ctx := context.Background()
 	b, err := os.ReadFile("credentials.json")
 	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+		fmt.Printf("Unable to read client secret file: %v", err)
 		return nil, err
 	}
 
@@ -87,26 +94,32 @@ func login() (*calendar.Service, error) {
 	//config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
 	config, err := google.ConfigFromJSON(b, calendar.CalendarScope)
 	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
+		fmt.Printf("Unable to parse client secret file to config: %v", err)
 		return nil, err
 	}
-	client := getClient(config)
+	client, err := getClient(config)
+        if err != nil {
+                fmt.Printf("Unable to get client")
+                return nil, err
+        }
 
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Calendar client: %v", err)
+		fmt.Print("Unable to retrieve Calendar client: %v", err)
 		return nil, err
 	}
 
 	return srv, err
 }
 
-func AddSchedule(event *calendar.Event, id string, srv *calendar.Service) {
-	var err error
-	event, err = srv.Events.Insert(id, event).Do()
+func AddSchedule(ev *calendar.Event, id string, srv *calendar.Service) error{
+	_, err := srv.Events.Insert(id, ev).Do()
 	if err != nil {
-		log.Fatalf("Unable to create event. %v\n", err)
+		fmt.Printf("Unable to create event. %v\n", err)
+                return err
 	}
+
+        return nil
 }
 
 func main() {
