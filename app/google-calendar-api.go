@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	//"io/ioutil"
 	"log"
 	"net/http"
@@ -26,10 +27,10 @@ func getClient(config *oauth2.Config) (*http.Client, error) {
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
 		tok, err = getTokenFromWeb(config)
-                if err != nil {
-                        fmt.Printf("Unable to get Token")
-                        return nil, err
-                }
+		if err != nil {
+			fmt.Printf("Unable to get Token")
+			return nil, err
+		}
 		saveToken(tokFile, tok)
 	}
 	return config.Client(context.Background(), tok), err
@@ -44,13 +45,13 @@ func getTokenFromWeb(config *oauth2.Config) (*oauth2.Token, error) {
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
 		fmt.Printf("Unable to read authorization code: %v", err)
-                return nil, err
+		return nil, err
 	}
 
 	tok, err := config.Exchange(context.TODO(), authCode)
 	if err != nil {
 		fmt.Printf("Unable to retrieve token from web: %v", err)
-                return nil, err
+		return nil, err
 	}
 	return tok, err
 }
@@ -68,16 +69,16 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 }
 
 // Saves a token to a file path.
-func saveToken(path string, token *oauth2.Token) error{
+func saveToken(path string, token *oauth2.Token) error {
 	fmt.Printf("Saving credential file to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		fmt.Printf("Unable to cache oauth token: %v", err)
-                return err
+		return err
 	}
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
-        return nil
+	return nil
 }
 
 func login() (*calendar.Service, error) {
@@ -98,10 +99,10 @@ func login() (*calendar.Service, error) {
 		return nil, err
 	}
 	client, err := getClient(config)
-        if err != nil {
-                fmt.Printf("Unable to get client")
-                return nil, err
-        }
+	if err != nil {
+		fmt.Printf("Unable to get client")
+		return nil, err
+	}
 
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
@@ -112,14 +113,14 @@ func login() (*calendar.Service, error) {
 	return srv, err
 }
 
-func AddSchedule(ev *calendar.Event, id string, srv *calendar.Service) error{
+func AddSchedule(ev *calendar.Event, id string, srv *calendar.Service) error {
 	_, err := srv.Events.Insert(id, ev).Do()
 	if err != nil {
 		fmt.Printf("Unable to create event. %v\n", err)
-                return err
+		return err
 	}
 
-        return nil
+	return nil
 }
 
 func main() {
