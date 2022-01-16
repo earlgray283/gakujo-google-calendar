@@ -23,8 +23,8 @@ jobs:
     - name: Test
       run: go test -v ./...
       env:
-        GAKUJO_USERNAME: secrets.GAKUJO_USERNAME
-        GAKUJO_PASSWORD: secrets.GAKUJO_PASSWORD
+        GAKUJO_USERNAME: ${{ secrets.GAKUJO_USERNAME }}
+        GAKUJO_PASSWORD: ${{ secrets.GAKUJO_PASSWORD }}
       
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v2
