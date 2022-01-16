@@ -50,3 +50,17 @@ func TestReportRows(t *testing.T) {
 		fmt.Println(row)
 	}
 }
+
+func TestMinitestRows(t *testing.T) {
+	option := model.MinitestSearchOption{
+		SchoolYear:   2021,
+		SemesterCode: model.LaterPeriod,
+	}
+	minitestRows, err := c.MinitestRows(&option)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range minitestRows {
+		fmt.Println(row)
+	}
+}
