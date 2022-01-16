@@ -11,6 +11,14 @@ import (
 	"github.com/earlgray283/gakujo-google-calendar/gakujo/scrape"
 )
 
+func (c *Client) LatestReportRows() ([]model.ReportRow, error) {
+	year, sc, _ := LatestSemesters()
+	return c.ReportRows(&model.ReportSearchOption{
+		SchoolYear:   year,
+		SemesterCode: sc,
+	})
+}
+
 func (c *Client) ReportRows(option *model.ReportSearchOption) ([]model.ReportRow, error) {
 	if option.SchoolYear == 0 || option.SemesterCode.Int() == 0 {
 		return nil, errors.New("some of options must be set")
