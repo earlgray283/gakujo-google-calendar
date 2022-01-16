@@ -1,11 +1,9 @@
-package app
+package main
 
 // systray 周り
 
 import (
 	"fmt"
-	"io/ioutil"
-	"time"
 	"os"
 	"log"
 
@@ -23,8 +21,6 @@ func readIconData (name string) ([]byte, error) {
 
 func main() {
 	onExit := func() {
-		now := time.Now()
-		ioutil.WriteFile(fmt.Sprintf(`on_exit_%d.txt`, now.UnixNano()), []byte(now.String()), 0644)
 	}
 
 	systray.Run(onReady, onExit)
@@ -57,12 +53,13 @@ func onReady() {
 			select {
 			//学情の情報をGoogleCalenderに登録するためのボタンの動作実行
 			case <-mGCAdder.ClickedCh:
+				fmt.Println("example::タスクを登録しました。")
 				//ScrapingCode Here
 
 			//終了のボタンの動作実行
 			case <-mQuit.ClickedCh:
 				systray.Quit()
-				fmt.Println("Quit2 now...")
+				fmt.Println("タスクトレイアプリを終了します。")
 				return
 			}
 		}
