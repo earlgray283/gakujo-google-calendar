@@ -19,14 +19,7 @@ func readIconData (name string) ([]byte, error) {
 	return b,nil
 }
 
-func main() {
-	onExit := func() {
-	}
-
-	systray.Run(onReady, onExit)
-}
-
-func onReady() {
+func OnReady() {
 
 	// We can manipulate the systray in other goroutines
 	go func() {
