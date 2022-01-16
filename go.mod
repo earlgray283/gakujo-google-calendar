@@ -21,4 +21,6 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 )
 
+require github.com/jasonlvhit/gocron v0.0.1
+
 require github.com/andybalholm/cascadia v1.3.1 // indirect
