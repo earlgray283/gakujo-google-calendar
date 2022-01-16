@@ -30,3 +30,6 @@ jobs:
       uses: golangci/golangci-lint-action@v2
       with:
         version: v1.43
+        
+    - name: gofmt
+      run: test `gofmt -l $(find . -type f -name '*.go' -not -path '*/\.git/*') | wc -l | xargs` -eq 0
