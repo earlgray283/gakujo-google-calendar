@@ -31,7 +31,7 @@ func ReportRows(r io.Reader) ([]model.ReportRow, error) {
 
 		jsText, exists := s.Find("td:nth-child(2) > a").Attr("onclick")
 		if !exists {
-			err = errors.New("Attr \"onClick\" not found")
+			err = errors.New(`attr "onClick" not found`)
 			return false
 		}
 		reportMetadata, inerr := parseReportJSargument(jsText)
@@ -115,7 +115,7 @@ func parseReportJSargument(jsArgument string) (model.TaskMetadata, error) {
 		tokens[i] = newToken[1 : len(newToken)-1]
 	}
 	if len(tokens) != 6 {
-		return model.TaskMetadata{}, errors.New("Too few tokens")
+		return model.TaskMetadata{}, errors.New("too few tokens")
 	}
 
 	year, err := strconv.Atoi(tokens[3])

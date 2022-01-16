@@ -13,7 +13,7 @@ import (
 
 func (c *Client) ReportRows(option *model.ReportSearchOption) ([]model.ReportRow, error) {
 	if option.SchoolYear == 0 || option.SemesterCode.Int() == 0 {
-		return nil, errors.New("Some of options must be set")
+		return nil, errors.New("some of options must be set")
 	}
 	page, err := c.fetchReportRowsPage(option)
 	if err != nil {

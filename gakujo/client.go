@@ -53,7 +53,7 @@ func (c *Client) FetchPage(url string, datas url.Values) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Response status was %d(expext %d)", resp.StatusCode, http.StatusOK)
+		return nil, fmt.Errorf("response status was %d(expext %d)", resp.StatusCode, http.StatusOK)
 	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {

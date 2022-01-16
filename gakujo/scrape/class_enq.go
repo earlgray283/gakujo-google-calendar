@@ -30,7 +30,7 @@ func ClassEnqRows(r io.Reader) ([]model.ClassEnqRow, error) {
 
 		jsText, exists := s.Find("td:nth-child(2) > a").Attr("onclick")
 		if !exists {
-			err = errors.New("Attr \"onClick\" not found")
+			err = errors.New(`attr "onClick" not found`)
 			return false
 		}
 		ClassEnqMetadata, inerr := parseClassEnqJSargument(jsText)
@@ -120,7 +120,7 @@ func parseClassEnqJSargument(jsArgument string) (model.TaskMetadata, error) {
 		tokens[i] = newToken[1 : len(newToken)-1]
 	}
 	if len(tokens) != 6 {
-		return model.TaskMetadata{}, errors.New("Too few tokens")
+		return model.TaskMetadata{}, errors.New("too few tokens")
 	}
 
 	year, err := strconv.Atoi(tokens[3])

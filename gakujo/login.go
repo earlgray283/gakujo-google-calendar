@@ -111,8 +111,8 @@ func (c *Client) fetchLoginAPIurl(SSOSAMLRequestURL string) (string, error) {
 	return resp.Header.Get("Location"), nil
 }
 
-func (c *Client) login(reqUrl, username, password string) error {
-	htmlReadCloser, err := c.postSSOexecution(reqUrl, username, password)
+func (c *Client) login(uri, username, password string) error {
+	htmlReadCloser, err := c.postSSOexecution(uri, username, password)
 	if err != nil {
 		return err
 	}
@@ -143,13 +143,13 @@ func (c *Client) login(reqUrl, username, password string) error {
 	return nil
 }
 
-func (c *Client) postSSOexecution(reqUrl, username, password string) (io.ReadCloser, error) {
+func (c *Client) postSSOexecution(uri, username, password string) (io.ReadCloser, error) {
 	datas := make(url.Values)
 	datas.Set("j_username", username)
 	datas.Set("j_password", password)
 	datas.Set("_eventId_proceed", "")
 
-	resp, err := c.http.PostForm(reqUrl, datas)
+	resp, err := c.http.PostForm(uri, datas)
 	if err != nil {
 		return nil, err
 	}
