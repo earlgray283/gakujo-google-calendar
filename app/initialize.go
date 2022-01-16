@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"html/template"
@@ -6,7 +6,15 @@ import (
 	"net/http"
 	"fmt"
 )
-func main() {
+
+type User struct {
+	Username string
+	Password string
+	Token    string
+}
+
+func GetUserInfoFromBrowser() User{
+	UserInfo := User{}
 
 	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles("template/auth.html")
@@ -23,18 +31,20 @@ func main() {
 	})
 
 	http.HandleFunc("/resist", func(rw http.ResponseWriter, r *http.Request){
-		username := r.FormValue("username")
-		password := r.FormValue("password")
-		token := r.FormValue("token")
-		if len(username) == 0 || len(password) == 0 || len(token) == 0 {
+		UserInfo.Username = r.FormValue("username")
+		UserInfo.Password = r.FormValue("password")
+		UserInfo.Token = r.FormValue("token")
+		if len(UserInfo.Username) == 0 || len(UserInfo.Password) == 0 || len(UserInfo.Token) == 0 {
     		http.Error(rw, "username, password, token must not be empty", http.StatusBadRequest)
     	return
 		}
-		fmt.Println(username, password, token)
+		fmt.Println(UserInfo.Username, UserInfo.Password, UserInfo.Token)
 	})
 
 	log.Println("Listening on port http://localhost:8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
 	}
+
+	return UserInfo
 }
