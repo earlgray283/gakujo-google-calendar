@@ -2,13 +2,6 @@
 
 ## For Developer
 
-### Setup
-
-```console
-$ echo 'GAKUJO_USERNAME={学情のユーザーネーム}' >> .env
-$ echo 'GAKUJO_PASSWORD={学情のパスワード}' >> .env
-```
-
 ### Requirements
 
 - Go(https://go.dev/doc/install)
