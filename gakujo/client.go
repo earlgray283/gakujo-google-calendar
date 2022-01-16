@@ -13,12 +13,6 @@ import (
 	"github.com/earlgray283/gakujo-google-calendar/gakujo/scrape"
 )
 
-const (
-	HostName          = "https://gakujo.shizuoka.ac.jp"
-	IdpHostName       = "https://idp.shizuoka.ac.jp"
-	GeneralPurposeUrl = "https://gakujo.shizuoka.ac.jp/portal/common/generalPurpose/"
-)
-
 type Client struct {
 	http  *http.Client
 	token string // org.apache.struts.taglib.html.TOKEN
@@ -40,23 +34,13 @@ func NewClient() *Client {
 // search a cookie "JSESSIONID" from c.jar
 // if not found, return ""
 func (c *Client) SessionID() string {
-	u, _ := url.Parse(HostName)
+	u, _ := url.Parse("https://gakujo.shizuoka.ac.jp")
 	for _, cookie := range c.http.Jar.Cookies(u) {
 		if cookie.Name == "JSESSIONID" {
 			return cookie.Value
 		}
 	}
 	return ""
-}
-
-// save cookie "Set-Cookies" into client.cookie
-func (c *Client) request(req *http.Request) (*http.Response, error) {
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
 }
 
 // fetch page which needs org.apache.struts.taglib.html.TOKEN and save its token
@@ -90,24 +74,19 @@ func (c *Client) FetchPage(url string, datas url.Values) ([]byte, error) {
 func (c *Client) getWithReferer(url, referer string) (*http.Response, error) {
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set("Referer", referer)
-	return c.request(req)
+	return c.http.Do(req)
 }
 
 // http.PostForm wrapper
 func (c *Client) postForm(url string, datas url.Values) (*http.Response, error) {
-	req, err := http.NewRequest(
-		http.MethodPost,
-		url,
-		strings.NewReader(datas.Encode()),
-	)
+	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(datas.Encode()))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	resp, err := c.request(req)
+	resp, err := c.http.Do(req)
 	if err != nil {
 		return nil, err
 	}
-
 	return resp, nil
 }

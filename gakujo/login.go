@@ -36,7 +36,7 @@ func (c *Client) Login(username, password string) error {
 		if err != nil {
 			return err
 		}
-		if err := c.login(IdpHostName+loginAPIurl, username, password); err != nil {
+		if err := c.login("https://idp.shizuoka.ac.jp"+loginAPIurl, username, password); err != nil {
 			return err
 		}
 	}
@@ -161,8 +161,8 @@ func (c *Client) postSSOexecution(reqUrl, username, password string) (io.ReadClo
 }
 
 func (c *Client) shibbolethlogin() (*http.Response, error) {
-	req, _ := http.NewRequest(http.MethodPost, HostName+"/portal/shibbolethlogin/shibbolethLogin/initLogin/sso", nil)
-	resp, err := c.request(req)
+	req, _ := http.NewRequest(http.MethodPost, "https://gakujo.shizuoka.ac.jp/portal/shibbolethlogin/shibbolethLogin/initLogin/sso", nil)
+	resp, err := c.http.Do(req)
 	resp.Body.Close()
 	_, _ = io.Copy(io.Discard, resp.Body)
 	return resp, err
