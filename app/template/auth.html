@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <title>ユーザー登録</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <header>
+           <div class="row">
+                    <h1>認証情報入力フォーム</h1>
+            </div>
+        </header>
+    </div>
+
+    <hr>
+    
+    <div class="container">
+        <form action="/resist" method="post" class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+                <div class="form-group">
+                    <span class="label label-danger" style="color:red">必須</span>
+                    <label for="username"> 学情のユーザーネーム</label>
+                    <div class = "input">
+                        <input type="text" id="username" name="username" class="form-control" autofocus required>                
+                    </div>
+                <div class="form-group">
+                    <span class="label label-danger" style="color:red">必須</span>
+                    <label for="password">学情のパスワード</label>
+                    <div class = "input">
+                        <input type="text" id="password" name="password" class="form-control" required>
+                    </div>
+                <br>
+                <div class = "form-group">
+                  <label for = "attention">以下のURLよりトークンを獲得してください。</label>
+                <div class = "form-group">
+                  <a href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.URL}}</a>
+                <div class="form-group">
+                    <span class="label label-danger" style="color:red">必須</span>
+                    <label for="token"> トークン</label>
+                    <div class = "input">
+                        <input type="text" id="token" name="token" class="form-control"required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">送信する</button>
+            </div>
+        </form>
+    </div>
+
+    <hr>
+</body>
+</html>
+
+
+<style>
+header{
+  margin-top: 30px;
+  color: #43A047;
+}
+hr{
+  border-width: 3px;
+  border-color: #43A047;
+}
+h1{
+  font-size: 25px;
+    font-weight: bold;
+    margin: 0;
+  text-align: center;
+}
+.align-light{
+    text-align: right;
+}
+.form-group{
+  margin-bottom: 35px;
+}
+footer p{
+  text-align: center;
+}
+input:required{
+  background: #ffcdd2;
+}
+input[type="text"]:invalid{
+  background: #ffcdd2;
+}
+input:valid{
+  background: #cbe6f7;
+}
+input:focus{
+  background: #DCEDC8;
+}
+</style>
