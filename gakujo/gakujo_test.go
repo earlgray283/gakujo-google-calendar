@@ -1,7 +1,6 @@
 package gakujo
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -46,8 +45,8 @@ func TestReportRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, row := range reportRows {
-		fmt.Println(row)
+	if len(reportRows) == 0 {
+		t.Fatal("reportRows is empty")
 	}
 }
 
@@ -60,7 +59,21 @@ func TestMinitestRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, row := range minitestRows {
-		fmt.Println(row)
+	if len(minitestRows) == 0 {
+		t.Fatal("no minitest rows")
+	}
+}
+
+func TestClassEnqRows(t *testing.T) {
+	option := model.ClassEnqSearchOption{
+		SchoolYear:   2021,
+		SemesterCode: model.LaterPeriod,
+	}
+	classEnqRows, err := c.ClassEnqRows(&option)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(classEnqRows) == 0 {
+		t.Fatal("no class enq rows")
 	}
 }
