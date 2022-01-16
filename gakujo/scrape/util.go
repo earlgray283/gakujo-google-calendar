@@ -7,7 +7,7 @@ import (
 )
 
 func replaceAndTrim(s string) string {
-	replacer := strings.NewReplacer("\n", "", "\t", "")
+	replacer := strings.NewReplacer("\n", "", "\t", "", "　", " ")
 	return replacer.Replace(strings.TrimSpace(s))
 }
 
