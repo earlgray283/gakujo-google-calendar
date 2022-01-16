@@ -16,14 +16,28 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.17
+        
+    - name: Cache Go modules
+      uses: actions/cache@v2
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
 
     - name: Build
       run: go build -v ./...
 
     - name: Test
       run: go test -v ./...
+      env:
+        GAKUJO_USERNAME: ${{ secrets.GAKUJO_USERNAME }}
+        GAKUJO_PASSWORD: ${{ secrets.GAKUJO_PASSWORD }}
       
-    - name: golangci-lint
-      uses: golangci/golangci-lint-action@v2
+    - name: staticcheck
+      uses: dominikh/staticcheck-action@v1.1.0
       with:
-        version: v1.43
+        version: "2021.1.2"
+        
+    - name: gofmt
+      run: test `gofmt -l $(find . -type f -name '*.go' -not -path '*/\.git/*') | wc -l | xargs` -eq 0
