@@ -4,9 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"hoge/app"
 	"os"
-	"log"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -34,7 +32,7 @@ func getTokenWithAuthCode(aCode string, config *oauth2.Config) (*oauth2.Token, e
 }
 
 //コンソールにURLを表示して、コンソールにAuthCodeを貼り付けてやるやつ。テスト用。
-func PrintAuthURL (URL string) (string, error) {
+func PrintAuthURL(URL string) (string, error) {
 	fmt.Printf("Access and type logincode : \n%v\n", URL)
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
@@ -42,9 +40,9 @@ func PrintAuthURL (URL string) (string, error) {
 		return "", err
 	}
 	return authCode, nil
-} 
+}
 
-// Retrieves a token from a local file.
+// 2回目以降のログインに使う
 func tokenFromFile(file string) (*oauth2.Token, error) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -89,7 +87,7 @@ func login() (*calendar.Service, error) {
 	authURL := makeAuthURL(config)
 
 	// AuthCodeを入力させる
-	UserInfo := app.GetUserInfoFromBrowser(authURL)
+	UserInfo := GetUserInfoFromBrowser(authURL)
 	authCode := UserInfo.Logincode
 
 	// Tokenを取る
@@ -102,7 +100,7 @@ func login() (*calendar.Service, error) {
 	// Tokenを保存する
 	tokFile := "token.json"
 	saveToken(tokFile, tok)
-	
+
 	/* 2回目以降のログインは↓のようにファイルからトークンを読む
 	tok, _ := tokenFromFile("token.json")
 	(エラーハンドリングは省略)
@@ -111,7 +109,7 @@ func login() (*calendar.Service, error) {
 
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		fmt.Print("Unable to retrieve Calendar client: %v", err)
+		fmt.Printf("Unable to retrieve Calendar client: %v", err)
 		return nil, err
 	}
 
