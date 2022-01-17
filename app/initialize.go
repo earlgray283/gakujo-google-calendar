@@ -2,55 +2,54 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"regexp"
-	"time"
+
+	"github.com/skratchdot/open-golang/open"
 )
 
-type User struct {
+type AuthFormInfo struct {
 	Username  string
 	Password  string
 	Logincode string
 }
 
-func GetUserInfoFromBrowser(url string) (User, error) {
-	UserInfo := User{}
-	mux := http.NewServeMux()
+func GetAuthInfoFromBrowser(url string) (*AuthFormInfo, error) {
+	authFormInfo := AuthFormInfo{}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	t, err := template.ParseFiles("template/auth.html")
+	if err != nil {
+		log.Fatalf("template error: %v", err)
+	}
+
+	mux := http.NewServeMux()
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,
 	}
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		t, err := template.ParseFiles("template/auth.html")
-		if err != nil {
-			log.Fatalf("template error: %v", err)
-		}
 		if err := t.Execute(rw, struct {
 			URL string
 		}{
 			URL: url,
 		}); err != nil {
-			log.Printf("failed to execute template: %v", err)
+			http.Error(rw, fmt.Sprintf("failed to execute template: %v", err), http.StatusInternalServerError)
+			return
 		}
 	})
 
 	mux.HandleFunc("/redirect", func(rw http.ResponseWriter, r *http.Request) {
-		t, err := template.ParseFiles("template/redirect.html")
-		if err != nil {
-			log.Fatalf("template error: %v", err)
-		}
 		if err := t.Execute(rw, struct {
 			URL string
 		}{
 			URL: url,
 		}); err != nil {
-			log.Printf("failed to execute template: %v", err)
+			http.Error(rw, fmt.Sprintf("failed to execute template: %v", err), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -59,41 +58,31 @@ func GetUserInfoFromBrowser(url string) (User, error) {
 			http.Redirect(rw, r, "/redirect", 301)
 			return
 		}
-		UserInfo.Username = r.FormValue("username")
-
 		if m, _ := regexp.MatchString("^[a-zA-Z0-9]+$", r.FormValue("password")); !m {
 			http.Redirect(rw, r, "/redirect", 301)
 			return
 		}
-		UserInfo.Password = r.FormValue("password")
-
 		if m, _ := regexp.MatchString("^[a-zA-Z0-9!-/:-@¥[-`{-~]+$", r.FormValue("logincode")); !m {
 			http.Redirect(rw, r, "/redirect", 301)
 			return
 		}
-		UserInfo.Logincode = r.FormValue("logincode")
 
-		if len(UserInfo.Username) == 0 || len(UserInfo.Password) == 0 || len(UserInfo.Logincode) == 0 {
-			http.Error(rw, "username, password, logincode must not be empty", http.StatusBadRequest)
-			return
-		}
+		authFormInfo.Username = r.FormValue("username")
+		authFormInfo.Password = r.FormValue("password")
+		authFormInfo.Logincode = r.FormValue("logincode")
 
-		// ここでシャットダウンするお
 		log.Println("Server shutdown")
-		_ = srv.Shutdown(ctx)
-
-		//fmt.Println(UserInfo.Username, UserInfo.Password, UserInfo.Token)
+		_ = srv.Shutdown(context.Background())
 	})
 
-	log.Println("Listening on port http://localhost:8080")
-
+	if err := open.Run("http://localhost:8080"); err != nil {
+		return nil, err
+	}
 	srv.Handler = mux
-
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-		// Error starting or closing listener:
-		return UserInfo, err
+		return nil, err
 	}
 
-	return UserInfo, nil
+	return &authFormInfo, nil
 
 }
