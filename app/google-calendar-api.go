@@ -62,10 +62,10 @@ func saveToken(path string, token *oauth2.Token) error {
 	return nil
 }
 
-func login() (*calendar.Service, error) {
+func login(credentialFile string, tokenFile string) (*calendar.Service, error) {
 	//Google Cloud Platform 上のアプリケーションにアクセスするための情報
 	ctx := context.Background()
-	b, err := os.ReadFile("credentials.json")
+	b, err := os.ReadFile(credentialFile)
 	if err != nil {
 		return nil, err
 	}
@@ -90,8 +90,11 @@ func login() (*calendar.Service, error) {
 	}
 
 	// Tokenを保存する
-	tokFile := "token.json"
-	saveToken(tokFile, tok)
+	tokFile := tokenFile
+	err = saveToken(tokFile, tok)
+	if err != nil {
+		return nil, err
+	}
 
 	/* 2回目以降のログインは↓のようにファイルからトークンを読む
 	tok, _ := tokenFromFile("token.json")

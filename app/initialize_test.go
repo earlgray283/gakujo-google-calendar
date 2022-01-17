@@ -13,7 +13,7 @@ func TestInitialize(t *testing.T) {
 		t.Skip("Skipping testing in CI environment")
 	}
 
-	service, err := login()
+	service, err := login("credentials.json", "token.json")
 	if err != nil {
 		log.Fatal("unable to login : ", err)
 	}
@@ -50,3 +50,5 @@ func TestInitialize(t *testing.T) {
 
 	AddSchedule(event, calendarId, service)
 }
+
+// go test -run ^TestInitialize$ github.com/earlgray283/gakujo-google-calendar/app -v -count=1
