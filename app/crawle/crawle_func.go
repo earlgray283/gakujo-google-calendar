@@ -11,10 +11,13 @@ func (c *Crawler) crawleMinitestRows(retryCount int) error {
 		err  error
 		rows []model.MinitestRow
 	)
-	c.minitest.Lock()
-	defer c.minitest.Unlock()
+	c.gc.Lock()
+	defer c.gc.Unlock()
+	c.Minitest.Lock()
+	defer c.Minitest.Unlock()
+	c.Log.Println("start crawling minitest")
 	for i := 0; i < retryCount; i++ {
-		rows, err = c.gc.LatestMinitestRows()
+		rows, err = c.gc.c.LatestMinitestRows()
 		if err == nil {
 			break
 		}
@@ -24,8 +27,9 @@ func (c *Crawler) crawleMinitestRows(retryCount int) error {
 	if err != nil {
 		return err
 	}
-	c.minitest.Rows = rows
-	c.minitest.UpdatedAt = time.Now()
+	c.Minitest.rows = rows
+	c.Minitest.updatedAt = time.Now()
+	c.Log.Printf("succeed in crawling minitest(%d rows)", len(rows))
 	return nil
 }
 
@@ -34,10 +38,13 @@ func (c *Crawler) crawleReportRows(retryCount int) error {
 		err  error
 		rows []model.ReportRow
 	)
-	c.report.Lock()
-	defer c.report.Unlock()
+	c.gc.Lock()
+	defer c.gc.Unlock()
+	c.Report.Lock()
+	defer c.Report.Unlock()
+	c.Log.Println("start crawling report")
 	for i := 0; i < retryCount; i++ {
-		rows, err = c.gc.LatestReportRows()
+		rows, err = c.gc.c.LatestReportRows()
 		if err == nil {
 			break
 		}
@@ -47,8 +54,9 @@ func (c *Crawler) crawleReportRows(retryCount int) error {
 	if err != nil {
 		return err
 	}
-	c.report.Rows = rows
-	c.report.UpdatedAt = time.Now()
+	c.Report.rows = rows
+	c.Report.updatedAt = time.Now()
+	c.Log.Printf("succeed in crawling report(%d rows)", len(rows))
 	return nil
 }
 
@@ -57,10 +65,13 @@ func (c *Crawler) crawleClassEnqRows(retryCount int) error {
 		err  error
 		rows []model.ClassEnqRow
 	)
-	c.classenq.Lock()
-	defer c.classenq.Unlock()
+	c.gc.Lock()
+	defer c.gc.Unlock()
+	c.Classenq.Lock()
+	defer c.Classenq.Unlock()
+	c.Log.Println("start crawling classenq")
 	for i := 0; i < retryCount; i++ {
-		rows, err = c.gc.LatestClassEnqRows()
+		rows, err = c.gc.c.LatestClassEnqRows()
 		if err == nil {
 			break
 		}
@@ -70,7 +81,8 @@ func (c *Crawler) crawleClassEnqRows(retryCount int) error {
 	if err != nil {
 		return err
 	}
-	c.classenq.Rows = rows
-	c.classenq.UpdatedAt = time.Now()
+	c.Classenq.rows = rows
+	c.Classenq.updatedAt = time.Now()
+	c.Log.Printf("succeed in crawling classenq(%d rows)", len(rows))
 	return nil
 }
