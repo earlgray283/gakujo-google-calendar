@@ -80,7 +80,10 @@ func login(credentialFile string, tokenFile string) (*calendar.Service, error) {
 	authURL := makeAuthURL(config)
 
 	// AuthCodeを入力させる
-	UserInfo := GetUserInfoFromBrowser(authURL)
+	UserInfo, err := GetUserInfoFromBrowser(authURL)
+	if err != nil {
+		return nil, err
+	}
 	authCode := UserInfo.Logincode
 
 	// Tokenを取る

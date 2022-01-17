@@ -5,8 +5,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"time"
 	"regexp"
+	"time"
 )
 
 type User struct {
@@ -19,7 +19,8 @@ func GetUserInfoFromBrowser(url string) (User, error) {
 	UserInfo := User{}
 	mux := http.NewServeMux()
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,
@@ -59,19 +60,19 @@ func GetUserInfoFromBrowser(url string) (User, error) {
 			return
 		}
 		UserInfo.Username = r.FormValue("username")
-		
+
 		if m, _ := regexp.MatchString("^[a-zA-Z0-9]+$", r.FormValue("password")); !m {
 			http.Redirect(rw, r, "/redirect", 301)
 			return
 		}
 		UserInfo.Password = r.FormValue("password")
-		
+
 		if m, _ := regexp.MatchString("^[a-zA-Z0-9!-/:-@¥[-`{-~]+$", r.FormValue("logincode")); !m {
 			http.Redirect(rw, r, "/redirect", 301)
 			return
 		}
 		UserInfo.Logincode = r.FormValue("logincode")
-		
+
 		if len(UserInfo.Username) == 0 || len(UserInfo.Password) == 0 || len(UserInfo.Logincode) == 0 {
 			http.Error(rw, "username, password, logincode must not be empty", http.StatusBadRequest)
 			return

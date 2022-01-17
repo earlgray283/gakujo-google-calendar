@@ -1,22 +1,10 @@
 package app
 
 import (
-	"log"
 	"fmt"
+	"log"
 	"testing"
-
 )
-
-func TestInitialize(t *testing.T) {
-	if os.Getenv("CI") != "" {
-		t.Skip("Skipping testing in CI environment")
-	}
-
-	service, err := login("credentials.json", "token.json")
-	if err != nil {
-		log.Println(err)
-	}
-}
 
 func TestGetUserInfoFromBrowser(t *testing.T) {
 	url := "https://github.com/earlgray283/gakujo-google-calendar/pull/13/files"

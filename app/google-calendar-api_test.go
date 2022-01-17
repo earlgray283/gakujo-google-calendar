@@ -13,7 +13,7 @@ func TestGooglecalenderapi(t *testing.T) {
 		t.Skip("Skipping testing in CI environment")
 	}
 
-	service, err := login()
+	service, err := login("credentials.json", "token.json")
 	if err != nil {
 		log.Fatal("unable to login : ", err)
 	}
