@@ -4,33 +4,33 @@ package app
 
 import (
 	"fmt"
-	"os"
 	"log"
+	"os"
 
 	"github.com/getlantern/systray"
 )
 
 //iconのデータを読み込む
-func readIconData (name string) ([]byte, error) {
+func readIconData(name string) ([]byte, error) {
 	b, err := os.ReadFile(name)
 	if err != nil {
-  		return b,err
+		return b, err
 	}
-	return b,nil
+	return b, nil
 }
 
 func OnReady() {
 
 	// We can manipulate the systray in other goroutines
 	go func() {
-		iconData,err := readIconData("iconwin.ico")
-		if err != nil{
+		iconData, err := readIconData("iconwin.ico")
+		if err != nil {
 			log.Fatal(err)
 		}
 		systray.SetTemplateIcon(iconData, iconData)
 		systray.SetTitle("Google Calender TaskTray")
 		systray.SetTooltip("Open the menu")
-		
+
 		//GoogleCalenderに登録するためのボタンの作成
 		mGCAdder := systray.AddMenuItem("Add to calendar", "ADD to Google Calendar.")
 
@@ -58,4 +58,3 @@ func OnReady() {
 		}
 	}()
 }
-
