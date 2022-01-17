@@ -1,3 +1,0 @@
-package gakujo
-
-// gakujo のテストコード

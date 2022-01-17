@@ -1,4 +1,3 @@
 .env
 credentials.json
 token.json
-initialize_test.go
