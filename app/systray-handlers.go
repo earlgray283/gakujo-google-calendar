@@ -3,58 +3,38 @@ package app
 // systray 周り
 
 import (
-	"fmt"
-	"log"
 	"os"
 
 	"github.com/getlantern/systray"
 )
 
-//iconのデータを読み込む
-func readIconData(name string) ([]byte, error) {
-	b, err := os.ReadFile(name)
+func (a *App) OnReady() {
+	iconData, err := os.ReadFile("app/icon.ico")
 	if err != nil {
-		return b, err
+		a.Log.Println(err)
+		systray.Quit()
 	}
-	return b, nil
-}
+	systray.SetIcon(iconData)
+	systray.SetTitle("Google Calender Tasktray")
+	systray.SetTooltip("Set tasks to your google calendar automaticaly")
 
-func OnReady() {
+	// GoogleCalenderに登録するためのボタンの作成
+	mGCAdder := systray.AddMenuItem("Add to calendar", "ADD to Google Calendar.")
 
-	// We can manipulate the systray in other goroutines
-	go func() {
-		iconData, err := readIconData("iconwin.ico")
-		if err != nil {
-			log.Fatal(err)
+	// 登録と退出の境界線を作る
+	systray.AddSeparator()
+
+	// quitボタンの作成
+	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
+
+	for {
+		select {
+		case <-mGCAdder.ClickedCh: // 学情の情報をGoogleCalenderに登録するためのボタンの動作実行
+			a.Log.Println("タスクを登録しました。")
+		case <-mQuit.ClickedCh: // 終了のボタンの動作実行
+			a.Log.Println("タスクトレイアプリを終了します。")
+			systray.Quit()
+			return
 		}
-		systray.SetTemplateIcon(iconData, iconData)
-		systray.SetTitle("Google Calender TaskTray")
-		systray.SetTooltip("Open the menu")
-
-		//GoogleCalenderに登録するためのボタンの作成
-		mGCAdder := systray.AddMenuItem("Add to calendar", "ADD to Google Calendar.")
-
-		mGCAdder.SetIcon(iconData)
-
-		//登録と退出の境界線を作る
-		systray.AddSeparator()
-
-		//退出ボタンの作成
-		mQuit := systray.AddMenuItem("退出", "Quit the whole app")
-
-		for {
-			select {
-			//学情の情報をGoogleCalenderに登録するためのボタンの動作実行
-			case <-mGCAdder.ClickedCh:
-				fmt.Println("example::タスクを登録しました。")
-				//ScrapingCode Here
-
-			//終了のボタンの動作実行
-			case <-mQuit.ClickedCh:
-				systray.Quit()
-				fmt.Println("タスクトレイアプリを終了します。")
-				return
-			}
-		}
-	}()
+	}
 }
