@@ -10,6 +10,14 @@ import (
 	"github.com/earlgray283/gakujo-google-calendar/gakujo/scrape"
 )
 
+func (c *Client) LatestMinitestRows() ([]model.MinitestRow, error) {
+	year, sc, _ := LatestSemesters()
+	return c.MinitestRows(&model.MinitestSearchOption{
+		SchoolYear:   year,
+		SemesterCode: sc,
+	})
+}
+
 func (c *Client) MinitestRows(option *model.MinitestSearchOption) ([]model.MinitestRow, error) {
 	page, err := c.fetchMinitestRowsPage(option)
 	if err != nil {

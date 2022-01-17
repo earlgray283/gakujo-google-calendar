@@ -9,6 +9,14 @@ import (
 	"github.com/earlgray283/gakujo-google-calendar/gakujo/scrape"
 )
 
+func (c *Client) LatestClassEnqRows() ([]model.ClassEnqRow, error) {
+	year, sc, _ := LatestSemesters()
+	return c.ClassEnqRows(&model.ClassEnqSearchOption{
+		SchoolYear:   year,
+		SemesterCode: sc,
+	})
+}
+
 func (c *Client) ClassEnqRows(option *model.ClassEnqSearchOption) ([]model.ClassEnqRow, error) {
 	page, err := c.fetchClassEnqRowsPage(option)
 	if err != nil {
