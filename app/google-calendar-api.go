@@ -19,20 +19,16 @@ func makeAuthURL(config *oauth2.Config) string {
 
 func getTokenWithAuthCode(aCode string, config *oauth2.Config) (*oauth2.Token, error) {
 	authCode := aCode
-	if len(authCode) == 0 {
-		fmt.Println("Unable to read authorization code")
-	}
 
 	tok, err := config.Exchange(context.TODO(), authCode)
 	if err != nil {
-		fmt.Printf("Unable to retrieve token from web: %v", err)
 		return nil, err
 	}
 	return tok, nil
 }
 
 //コンソールにURLを表示して、コンソールにAuthCodeを貼り付けてやるやつ。テスト用。
-func PrintAuthURL(URL string) (string, error) {
+func GetLoginCodeFromStdin(URL string) (string, error) {
 	fmt.Printf("Access and type logincode : \n%v\n", URL)
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
@@ -59,7 +55,6 @@ func saveToken(path string, token *oauth2.Token) error {
 	fmt.Printf("Saving credential file to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		fmt.Printf("Unable to cache oauth token: %v", err)
 		return err
 	}
 	defer f.Close()
@@ -72,14 +67,12 @@ func login() (*calendar.Service, error) {
 	ctx := context.Background()
 	b, err := os.ReadFile("credentials.json")
 	if err != nil {
-		fmt.Printf("Unable to read client secret file: %v", err)
 		return nil, err
 	}
 
 	//スコープの設定
 	config, err := google.ConfigFromJSON(b, calendar.CalendarScope)
 	if err != nil {
-		fmt.Printf("Unable to parse client secret file to config: %v", err)
 		return nil, err
 	}
 
@@ -93,7 +86,6 @@ func login() (*calendar.Service, error) {
 	// Tokenを取る
 	tok, err := getTokenWithAuthCode(authCode, config)
 	if err != nil {
-		fmt.Printf("Unable to retrive token : %v", err)
 		return nil, err
 	}
 
@@ -109,7 +101,6 @@ func login() (*calendar.Service, error) {
 
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		fmt.Printf("Unable to retrieve Calendar client: %v", err)
 		return nil, err
 	}
 
@@ -119,7 +110,6 @@ func login() (*calendar.Service, error) {
 func AddSchedule(ev *calendar.Event, id string, srv *calendar.Service) error {
 	_, err := srv.Events.Insert(id, ev).Do()
 	if err != nil {
-		fmt.Printf("Unable to create event. %v\n", err)
 		return err
 	}
 
