@@ -2,23 +2,30 @@ package crawle
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	"github.com/earlgray283/gakujo-google-calendar/gakujo"
+	"github.com/earlgray283/gakujo-google-calendar/gakujo/model"
 	"github.com/go-co-op/gocron"
 )
 
 type Crawler struct {
-	gc  *gakujo.Client
+	gc  *GakujoClient
 	opt *CrawleOption
 	Log *log.Logger
 
 	username string
 	password string
 
-	minitest *MinitestStorage
-	report   *ReportStorage
-	classenq *ClassEnqStorage
+	Minitest *MinitestStorage
+	Report   *ReportStorage
+	Classenq *ClassEnqStorage
+}
+
+type GakujoClient struct {
+	c *gakujo.Client
+	sync.Mutex
 }
 
 func NewCrawler(username, password string, opt *CrawleOption) (*Crawler, error) {
@@ -26,35 +33,45 @@ func NewCrawler(username, password string, opt *CrawleOption) (*Crawler, error) 
 	if err := gc.Login(username, password); err != nil {
 		return nil, err
 	}
-	return &Crawler{gc, opt, log.Default(), username, password, nil, nil, nil}, nil
+	wgc := &GakujoClient{c: gc}
+	rs := &ReportStorage{rows: []model.ReportRow{}}
+	ms := &MinitestStorage{rows: []model.MinitestRow{}}
+	ces := &ClassEnqStorage{rows: []model.ClassEnqRow{}}
+	return &Crawler{wgc, opt, log.Default(), username, password, ms, rs, ces}, nil
 }
 
 func (c *Crawler) Start() chan error {
 	s := gocron.NewScheduler(time.Local)
 	errc := make(chan error)
-	tasks := []struct {
-		f        func(int) error
-		interval time.Duration
-	}{
-		{c.crawleMinitestRows, c.opt.MinitestInterval},
-		{c.crawleReportRows, c.opt.ReportInterval},
-		{c.crawleClassEnqRows, c.opt.ClassenqInterval},
-	}
-	for _, task := range tasks {
-		s.Every(uint64(task.interval.Hours())).Hours().Do(func() {
-			if err := task.f(c.opt.RetryCount); err != nil {
-				c.Log.Println(err)
-				errc <- err
-			}
-		})
-	}
+	s.Every(c.opt.MinitestInterval).Do(func() {
+		if err := c.crawleMinitestRows(c.opt.RetryCount); err != nil {
+			c.Log.Println(err)
+			errc <- err
+		}
+	})
+	s.Every(c.opt.ReportInterval).Do(func() {
+		if err := c.crawleReportRows(c.opt.RetryCount); err != nil {
+			c.Log.Println(err)
+			errc <- err
+		}
+	})
+	s.Every(c.opt.ClassenqInterval).Do(func() {
+		if err := c.crawleClassEnqRows(c.opt.RetryCount); err != nil {
+			c.Log.Println(err)
+			errc <- err
+		}
+	})
 	// 30分ごとにセッションを回復する
 	s.Every(30).Minutes().Do(func() {
-		if _, err := c.gc.LatestClassEnqRows(); err != nil {
-			if err := c.gc.Login(c.username, c.password); err != nil {
+		c.gc.Lock()
+		defer c.gc.Unlock()
+		c.Log.Println("updating session")
+		if _, err := c.gc.c.LatestClassEnqRows(); err != nil {
+			if err := c.gc.c.Login(c.username, c.password); err != nil {
 				errc <- err
 			}
 		}
+		c.Log.Println("succeed in updating session")
 	})
 
 	s.StartAsync()
