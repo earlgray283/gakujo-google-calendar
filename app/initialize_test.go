@@ -2,12 +2,17 @@ package app
 
 import (
 	"log"
+	"os"
 	"testing"
 
 	"google.golang.org/api/calendar/v3"
 )
 
 func TestInitialize(t *testing.T) {
+	if os.Getenv("CI") != "" {
+		t.Skip("Skipping testing in CI environment")
+	}
+
 	service, err := login()
 	if err != nil {
 		log.Fatal("unable to login : ", err)
