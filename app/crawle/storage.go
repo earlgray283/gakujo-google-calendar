@@ -9,18 +9,36 @@ import (
 
 type MinitestStorage struct {
 	sync.Mutex
-	Rows []model.MinitestRow
-	UpdatedAt    time.Time
+	rows      []model.MinitestRow
+	updatedAt time.Time
 }
 
 type ReportStorage struct {
 	sync.Mutex
-	Rows []model.ReportRow
-	UpdatedAt  time.Time
+	rows      []model.ReportRow
+	updatedAt time.Time
 }
 
 type ClassEnqStorage struct {
 	sync.Mutex
-	Rows []model.ClassEnqRow
-	UpdatedAt    time.Time
+	rows      []model.ClassEnqRow
+	updatedAt time.Time
+}
+
+func (s *MinitestStorage) Get() ([]model.MinitestRow, time.Time) {
+	s.Lock()
+	defer s.Unlock()
+	return s.rows, s.updatedAt
+}
+
+func (s *ReportStorage) Get() ([]model.ReportRow, time.Time) {
+	s.Lock()
+	defer s.Unlock()
+	return s.rows, s.updatedAt
+}
+
+func (s *ClassEnqStorage) Get() ([]model.ClassEnqRow, time.Time) {
+	s.Lock()
+	defer s.Unlock()
+	return s.rows, s.updatedAt
 }
