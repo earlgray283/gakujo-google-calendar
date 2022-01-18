@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"google.golang.org/api/calendar/v3"
 )
 
@@ -12,10 +13,14 @@ func TestGooglecalenderapi(t *testing.T) {
 		t.Skip("Skipping testing in CI environment")
 	}
 
-	config, err := GenerateConfig()
+	config, err := LoadConfig(util.DefaultConfigDir())
 	if err != nil {
-		t.Fatal(err)
+		config, err = GenerateConfig()
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
+
 	service, err := NewServiceFromToken(config.Token)
 	if err != nil {
 		t.Fatal(err)
@@ -53,18 +58,4 @@ func TestGooglecalenderapi(t *testing.T) {
 	if err := AddSchedule(event, calendarId, service); err != nil {
 		t.Fatal(err)
 	}
-}
-
-func TestGetUserInfoFromBrowser(t *testing.T) {
-	if os.Getenv("CI") != "" {
-		t.Skip("Skipping testing in CI environment")
-	}
-	afi, err := GetAuthInfoFromBrowser("https://github.com/earlgray283/gakujo-google-calendar")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if afi.Logincode == "" || afi.Password == "" || afi.Username == "" {
-		t.Fatal("the values logincode, password, username must not be empty")
-	}
-	t.Log(afi.Logincode, afi.Password, afi.Username)
 }
