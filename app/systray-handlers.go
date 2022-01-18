@@ -38,7 +38,7 @@ func (a *App) OnReady() {
 		select {
 		case <-AllAdder.ClickedCh:
 			CounterSum := 0
-			
+
 			ReportCounter, err := a.registerReport()
 			if err != nil {
 				log.Fatal(err)
@@ -68,7 +68,7 @@ func (a *App) OnReady() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			
+
 			if counter != 0 {
 				a.Log.Println("レポート課題を登録しました。")
 			} else {
@@ -81,7 +81,7 @@ func (a *App) OnReady() {
 				log.Fatal(err)
 			}
 
-			if counter != 0{
+			if counter != 0 {
 				a.Log.Println("小テスト課題を登録しました。")
 			} else {
 				a.Log.Println("登録する小テスト課題はありませんでした。")
@@ -93,11 +93,11 @@ func (a *App) OnReady() {
 				log.Fatal(err)
 			}
 
-			if counter != 0{
+			if counter != 0 {
 				a.Log.Println("授業アンケートを登録しました。")
 			} else {
 				a.Log.Println("登録する授業アンケートはありませんでした。")
-			} 
+			}
 
 		case <-mQuit.ClickedCh: // 終了のボタンの動作実行
 			a.Log.Println("タスクトレイアプリを終了します。")
@@ -165,7 +165,7 @@ func (a *App) registerMinitest() (int, error) {
 		}
 
 		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) == true {
+			if time.Now().Before(row.EndDate) {
 				err := AddSchedule(Event, calendarId, a.srv)
 				if err != nil {
 					return -1, err
@@ -201,10 +201,10 @@ func (a *App) registerClassEnq() (int, error) {
 
 		// 未提出だったら・・・・・・・・・・・
 		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) == true {
+			if time.Now().Before(row.EndDate) {
 				err := AddSchedule(Event, calendarId, a.srv)
 				if err != nil {
-					return -1,nil
+					return -1, nil
 				} else {
 					counter += 1
 				}
