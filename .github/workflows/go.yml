@@ -32,7 +32,7 @@ jobs:
       run: go build -v ./...
 
     - name: Test
-      run: go test -v ./...
+      run: touch app/credentials.json && go test -v ./...
       env:
         GAKUJO_USERNAME: ${{ secrets.GAKUJO_USERNAME }}
         GAKUJO_PASSWORD: ${{ secrets.GAKUJO_PASSWORD }}
@@ -43,4 +43,5 @@ jobs:
         version: "2021.1.2"
         
     - name: gofmt
+      shell: bash
       run: test `gofmt -l $(find . -type f -name '*.go' -not -path '*/\.git/*') | wc -l | xargs` -eq 0
