@@ -2,9 +2,9 @@
   // Go
   "go.lintTool": "golangci-lint",
   "go.formatTool": "gofmt",
-  "go.testFlags": ["-v", "-count=1"],
-  "go.lintFlags": [
-      "--fast"
+  "go.testFlags": [
+    "-v",
+    "-count=1"
   ],
   "[go]": {
     "editor.formatOnSave": true,
