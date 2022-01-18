@@ -13,6 +13,11 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
+const (
+	FmtCrawlerLogFile = "crawler_log_2006_01_02_15_04_05.txt"
+	FmtAppLogFile     = "app_log_2006_01_02_15_04_05.txt"
+)
+
 type Config struct {
 	Username string
 	Password string

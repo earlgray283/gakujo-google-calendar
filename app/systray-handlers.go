@@ -38,3 +38,8 @@ func (a *App) OnReady() {
 		}
 	}
 }
+
+func (a *App) OnExit() {
+	a.appLogFile.Close()
+	a.crawlerLogFile.Close()
+}

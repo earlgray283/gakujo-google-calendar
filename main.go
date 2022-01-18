@@ -6,7 +6,6 @@ import (
 	"github.com/earlgray283/gakujo-google-calendar/app"
 	"github.com/earlgray283/gakujo-google-calendar/app/crawle"
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
-	"github.com/getlantern/systray"
 )
 
 func main() {
@@ -25,13 +24,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	crawler.Start()
 
 	srv, err := app.NewServiceFromToken(config.Token)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	app := app.NewApp(crawler, srv)
-	systray.Run(app.OnReady, func() {})
+	app, err := app.NewApp(crawler, srv)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := app.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
