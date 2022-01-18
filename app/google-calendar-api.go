@@ -15,6 +15,7 @@ import (
 var CredentialsJsonByte []byte
 
 // コンソールにURLを表示して、コンソールにAuthCodeを貼り付けてやるやつ。テスト用。
+//lint:ignore U1000 because of test
 //nolint
 func getLoginCodeFromStdin(URL string) (string, error) {
 	fmt.Printf("Access and type logincode : \n%v\n", URL)

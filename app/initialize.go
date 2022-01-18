@@ -55,15 +55,15 @@ func GetAuthInfoFromBrowser(url string) (*AuthFormInfo, error) {
 
 	mux.HandleFunc("/regist", func(rw http.ResponseWriter, r *http.Request) {
 		if m, _ := regexp.MatchString("^[a-zA-Z0-9]+$", r.FormValue("username")); !m {
-			http.Redirect(rw, r, "/redirect", 301)
+			http.Redirect(rw, r, "/redirect", http.StatusMovedPermanently)
 			return
 		}
 		if m, _ := regexp.MatchString("^[a-zA-Z0-9]+$", r.FormValue("password")); !m {
-			http.Redirect(rw, r, "/redirect", 301)
+			http.Redirect(rw, r, "/redirect", http.StatusMovedPermanently)
 			return
 		}
 		if m, _ := regexp.MatchString("^[a-zA-Z0-9!-/:-@¥[-`{-~]+$", r.FormValue("logincode")); !m {
-			http.Redirect(rw, r, "/redirect", 301)
+			http.Redirect(rw, r, "/redirect", http.StatusMovedPermanently)
 			return
 		}
 
