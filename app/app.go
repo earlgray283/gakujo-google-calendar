@@ -51,11 +51,8 @@ func (a *App) Run() error {
 	go systray.Run(a.OnReady, a.OnExit)
 
 	for {
-		select {
-		case err := <-errC:
-			systray.Quit()
-			return err
-
-		}
+		err := <-errC
+		systray.Quit()
+		return err
 	}
 }

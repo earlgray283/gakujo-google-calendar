@@ -53,8 +53,8 @@ func SaveConfig(config *Config, configDir string) error {
 		return err
 	}
 	defer f1.Close()
-	f1.WriteString("GAKUJO_USERNAME" + "=" + config.Username + "\n")
-	f1.WriteString("GAKUJO_PASSWORD" + "=" + config.Password + "\n")
+	_, _ = f1.WriteString("GAKUJO_USERNAME" + "=" + config.Username + "\n")
+	_, _ = f1.WriteString("GAKUJO_PASSWORD" + "=" + config.Password + "\n")
 	f2, err := os.OpenFile(tokenPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		return err

@@ -43,26 +43,26 @@ func NewCrawler(username, password string, opt *CrawleOption) (*Crawler, error) 
 func (c *Crawler) Start() chan error {
 	s := gocron.NewScheduler(time.Local)
 	errc := make(chan error)
-	s.Every(c.opt.MinitestInterval).Do(func() {
+	_, _ = s.Every(c.opt.MinitestInterval).Do(func() {
 		if err := c.crawleMinitestRows(c.opt.RetryCount); err != nil {
 			c.Log.Println(err)
 			errc <- err
 		}
 	})
-	s.Every(c.opt.ReportInterval).Do(func() {
+	_, _ = s.Every(c.opt.ReportInterval).Do(func() {
 		if err := c.crawleReportRows(c.opt.RetryCount); err != nil {
 			c.Log.Println(err)
 			errc <- err
 		}
 	})
-	s.Every(c.opt.ClassenqInterval).Do(func() {
+	_, _ = s.Every(c.opt.ClassenqInterval).Do(func() {
 		if err := c.crawleClassEnqRows(c.opt.RetryCount); err != nil {
 			c.Log.Println(err)
 			errc <- err
 		}
 	})
 	// 30分ごとにセッションを回復する
-	s.Every(30).Minutes().Do(func() {
+	_, _ = s.Every(30).Minutes().Do(func() {
 		c.gc.Lock()
 		defer c.gc.Unlock()
 		c.Log.Println("updating session")
@@ -78,12 +78,10 @@ func (c *Crawler) Start() chan error {
 
 	go func() {
 		for {
-			select {
-			case <-errc:
-				s.Stop()
-				s.Clear()
-				return
-			}
+			<-errc
+			s.Stop()
+			s.Clear()
+			return
 		}
 	}()
 
