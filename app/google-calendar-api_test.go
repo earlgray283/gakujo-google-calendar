@@ -3,6 +3,8 @@ package app
 import (
 	"os"
 	"testing"
+	"log"
+	"fmt"
 
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"google.golang.org/api/calendar/v3"
@@ -41,7 +43,19 @@ func TestGooglecalenderapi(t *testing.T) {
 	fmt.Println(calendarId)
 	*/
 
-	//pageToken := ""
+
+	// カレンダー一覧を取得
+    cl, err := service.CalendarList.List().Do()
+    if err != nil {
+        log.Fatalf("Error CalendarList.List(): %v", err)
+        return
+    }
+
+	// カレンダー一覧の名前とIDをプリント
+    fmt.Printf("--- Your calendars ---\n")
+    for _, item := range cl.Items {
+        fmt.Println(item.Summary + " " + item.Id)
+    }
 
 	// 予定を追加
 	event := &calendar.Event{
