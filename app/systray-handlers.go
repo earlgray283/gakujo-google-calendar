@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
-	//"github.com/go-co-op/gocron"
+	"github.com/go-co-op/gocron"
 	"google.golang.org/api/calendar/v3"
 )
 
@@ -34,6 +34,11 @@ func (a *App) OnReady() {
 
 	// quitボタンの作成
 	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
+
+	err = a.autoAddSchedule()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for {
 		select {
@@ -206,13 +211,18 @@ func newEvent(title string, t time.Time) *calendar.Event {
 	return Event
 }
 
-/*
-
-func autoAddSchedule() {
+func (a *App) autoAddSchedule() error {
 	s := gocron.NewScheduler(time.Local)
-	_, _ = s.Every(30).Minutes().Do(func() {
-		
-	})
-}
 
-*/
+	_, _ = s.Every(30).Minutes().Do(func(){
+		counter,_ := a.registerAll()
+
+		if counter != 0 {
+			a.Log.Println("すべての予定を登録しました。")
+		} else {
+			a.Log.Println("登録する予定はありませんでした。")
+		}
+	})
+	s.StartAsync()
+	return nil
+}
