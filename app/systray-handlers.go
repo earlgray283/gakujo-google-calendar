@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
+	//"github.com/go-co-op/gocron"
 	"google.golang.org/api/calendar/v3"
 )
 
@@ -37,27 +38,12 @@ func (a *App) OnReady() {
 	for {
 		select {
 		case <-AllAdder.ClickedCh:
-			CounterSum := 0
-
-			ReportCounter, err := a.registerReport()
+			counter, err := a.registerAll()
 			if err != nil {
 				log.Fatal(err)
 			}
-			CounterSum += ReportCounter
 
-			MinitestCounter, err := a.registerMinitest()
-			if err != nil {
-				log.Fatal(err)
-			}
-			CounterSum += MinitestCounter
-
-			ClassEnqCounter, err := a.registerClassEnq()
-			if err != nil {
-				log.Fatal(err)
-			}
-			CounterSum += ClassEnqCounter
-
-			if CounterSum != 0 {
+			if counter != 0 {
 				a.Log.Println("全ての課題を登録しました。")
 			} else {
 				a.Log.Println("登録する課題はありませんでした。")
@@ -117,7 +103,7 @@ func (a *App) registerReport() (int, error) {
 	reportRows, _ := a.crawler.Report.Get()
 	counter := 0
 	for _, row := range reportRows {
-		Event := newEvent("[" + row.CourseName + "]" + row.Title, row.EndDate)
+		Event := newEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 
 		// 未提出だったら・・・・・・・・・・・
 		if row.LastSubmitDate.String() == "0001-01-01 00:00:00 +0000 UTC" {
@@ -138,7 +124,7 @@ func (a *App) registerMinitest() (int, error) {
 
 	minitestRows, _ := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
-		Event := newEvent("[" + row.CourseName + "]" + row.Title, row.EndDate)
+		Event := newEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
@@ -162,7 +148,7 @@ func (a *App) registerClassEnq() (int, error) {
 	classEnqRows, _ := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
 
-		Event := newEvent("[" + row.CourseName + "]" + row.Title, row.EndDate)
+		Event := newEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 
 		// 未提出だったら・・・・・・・・・・・
 		if row.SubmitStatus == "未提出" {
@@ -177,6 +163,30 @@ func (a *App) registerClassEnq() (int, error) {
 		}
 	}
 	return counter, nil
+}
+
+func (a *App) registerAll() (int, error) {
+	CounterSum := 0
+
+	ReportCounter, err := a.registerReport()
+	if err != nil {
+		return 0, err
+	}
+	CounterSum += ReportCounter
+
+	MinitestCounter, err := a.registerMinitest()
+	if err != nil {
+		return 0, err
+	}
+	CounterSum += MinitestCounter
+
+	ClassEnqCounter, err := a.registerClassEnq()
+	if err != nil {
+		return 0, err
+	}
+	CounterSum += ClassEnqCounter
+
+	return CounterSum, nil
 }
 
 func newEvent(title string, t time.Time) *calendar.Event {
@@ -195,3 +205,14 @@ func newEvent(title string, t time.Time) *calendar.Event {
 	}
 	return Event
 }
+
+/*
+
+func autoAddSchedule() {
+	s := gocron.NewScheduler(time.Local)
+	_, _ = s.Every(30).Minutes().Do(func() {
+		
+	})
+}
+
+*/
