@@ -117,19 +117,7 @@ func (a *App) registerReport() (int, error) {
 	reportRows, _ := a.crawler.Report.Get()
 	counter := 0
 	for _, row := range reportRows {
-		Event := &calendar.Event{
-			Summary:     "[" + row.CourseName + "]" + row.Title,
-			Location:    "学務情報システム",
-			Description: "TaskID: " + row.TaskMetadata.ID,
-			Start: &calendar.EventDateTime{
-				DateTime: row.EndDate.Add(-time.Hour).Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-			End: &calendar.EventDateTime{
-				DateTime: row.EndDate.Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-		}
+		Event := newEvent("[" + row.CourseName + "]" + row.Title, row.EndDate)
 
 		// 未提出だったら・・・・・・・・・・・
 		if row.LastSubmitDate.String() == "0001-01-01 00:00:00 +0000 UTC" {
@@ -150,19 +138,7 @@ func (a *App) registerMinitest() (int, error) {
 
 	minitestRows, _ := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
-		Event := &calendar.Event{
-			Summary:     "[" + row.CourseName + "]" + row.Title,
-			Location:    "学務情報システム",
-			Description: "TaskID: " + row.TaskMetadata.ID,
-			Start: &calendar.EventDateTime{
-				DateTime: row.EndDate.Add(-time.Hour).Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-			End: &calendar.EventDateTime{
-				DateTime: row.EndDate.Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-		}
+		Event := newEvent("[" + row.CourseName + "]" + row.Title, row.EndDate)
 
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
@@ -185,19 +161,8 @@ func (a *App) registerClassEnq() (int, error) {
 
 	classEnqRows, _ := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
-		Event := &calendar.Event{
-			Summary:     "[" + row.CourseName + "]" + row.Title,
-			Location:    "学務情報システム",
-			Description: "TaskID: " + row.TaskMetadata.ID,
-			Start: &calendar.EventDateTime{
-				DateTime: row.EndDate.Add(-time.Hour).Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-			End: &calendar.EventDateTime{
-				DateTime: row.EndDate.Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-		}
+
+		Event := newEvent("[" + row.CourseName + "]" + row.Title, row.EndDate)
 
 		// 未提出だったら・・・・・・・・・・・
 		if row.SubmitStatus == "未提出" {
@@ -212,4 +177,21 @@ func (a *App) registerClassEnq() (int, error) {
 		}
 	}
 	return counter, nil
+}
+
+func newEvent(title string, t time.Time) *calendar.Event {
+	Event := &calendar.Event{
+		Summary:     title,
+		Location:    "学務情報システム",
+		Description: "学情カレンダーから追加された予定です。\n学務情報システム: https://gakujo.shizuoka.ac.jp/portal/",
+		Start: &calendar.EventDateTime{
+			DateTime: t.Add(-time.Hour).Format("2006-01-02T15:04:05+09:00"),
+			TimeZone: "Asia/Tokyo",
+		},
+		End: &calendar.EventDateTime{
+			DateTime: t.Format("2006-01-02T15:04:05+09:00"),
+			TimeZone: "Asia/Tokyo",
+		},
+	}
+	return Event
 }
