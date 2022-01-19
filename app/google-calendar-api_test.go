@@ -3,6 +3,7 @@ package app
 import (
 	"os"
 	"testing"
+	"fmt"
 
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"google.golang.org/api/calendar/v3"
@@ -26,10 +27,20 @@ func TestGooglecalenderapi(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//ここから予定の追加
-	// Refer to the Go quickstart on how to setup the environment:
-	// https://developers.google.com/calendar/quickstart/go
-	// Change the scope to calendar.CalendarScope and delete any stored credentials.
+	// 新しいカレンダーを作成
+	newCalendar := &calendar.Calendar{
+		Summary: "学情カレンダー",
+	}
+	createdCalendar, err := service.Calendars.Insert(newCalendar).Do()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// カレンダーIDを取得
+	calendarId := createdCalendar.Id
+	fmt.Println(calendarId)
+
+	// 予定を追加
 	event := &calendar.Event{
 		Summary:     "課題があるよ",
 		Location:    "gakujo",
@@ -44,16 +55,7 @@ func TestGooglecalenderapi(t *testing.T) {
 			TimeZone: "Asia/Tokyo",
 			//TimeZone: "America/Los_Angeles",
 		},
-		//Recurrence: []string{"RRULE:FREQ=DAILY;COUNT=2"},
-		/*
-		   Attendees: []*calendar.EventAttendee{
-		   &calendar.EventAttendee{Email:"lpage@example.com"},
-		   &calendar.EventAttendee{Email:"sbrin@example.com"},
-		   },
-		*/
 	}
-
-	calendarId := "primary"
 
 	if err := AddSchedule(event, calendarId, service); err != nil {
 		t.Fatal(err)
