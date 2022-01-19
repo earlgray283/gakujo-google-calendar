@@ -3,7 +3,6 @@ package app
 import (
 	"os"
 	"testing"
-	"fmt"
 
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"google.golang.org/api/calendar/v3"
@@ -27,6 +26,7 @@ func TestGooglecalenderapi(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	/* テストの度に実行されてカレンダーが増殖するので一旦コメントアウト！
 	// 新しいカレンダーを作成
 	newCalendar := &calendar.Calendar{
 		Summary: "学情カレンダー",
@@ -39,6 +39,9 @@ func TestGooglecalenderapi(t *testing.T) {
 	// カレンダーIDを取得
 	calendarId := createdCalendar.Id
 	fmt.Println(calendarId)
+	*/
+
+	//pageToken := ""
 
 	// 予定を追加
 	event := &calendar.Event{
@@ -56,7 +59,7 @@ func TestGooglecalenderapi(t *testing.T) {
 			//TimeZone: "America/Los_Angeles",
 		},
 	}
-
+	calendarId := "primary"
 	if err := AddSchedule(event, calendarId, service); err != nil {
 		t.Fatal(err)
 	}

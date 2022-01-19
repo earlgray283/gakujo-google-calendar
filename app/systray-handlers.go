@@ -214,8 +214,8 @@ func newEvent(title string, t time.Time) *calendar.Event {
 func (a *App) autoAddSchedule() error {
 	s := gocron.NewScheduler(time.Local)
 
-	_, _ = s.Every(30).Minutes().Do(func(){
-		counter,_ := a.registerAll()
+	_, _ = s.Every(30).Minutes().Do(func() {
+		counter, _ := a.registerAll()
 
 		if counter != 0 {
 			a.Log.Println("すべての予定を登録しました。")
