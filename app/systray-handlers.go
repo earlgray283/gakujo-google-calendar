@@ -8,8 +8,11 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
+	"github.com/go-co-op/gocron"
 	"google.golang.org/api/calendar/v3"
 )
+
+const dateTimeNotSubmited = "0001-01-01 00:00:00 +0000 UTC"
 
 func (a *App) OnReady() {
 	a.Log.SetOutput(os.Stdout)
@@ -34,66 +37,57 @@ func (a *App) OnReady() {
 	// quitボタンの作成
 	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 
+	// 定期実行する
+	err = a.autoAddSchedule()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for {
 		select {
 		case <-AllAdder.ClickedCh:
-			CounterSum := 0
-
-			ReportCounter, err := a.registReport()
+			count, err := a.registAll()
 			if err != nil {
 				log.Fatal(err)
 			}
-			CounterSum += ReportCounter
 
-			MinitestCounter, err := a.registMinitest()
-			if err != nil {
-				log.Fatal(err)
-			}
-			CounterSum += MinitestCounter
-
-			ClassEnqCounter, err := a.registClassEnq()
-			if err != nil {
-				log.Fatal(err)
-			}
-			CounterSum += ClassEnqCounter
-
-			if CounterSum != 0 {
+			if count != 0 {
 				a.Log.Println("全ての課題を登録しました。")
 			} else {
 				a.Log.Println("登録する課題はありませんでした。")
 			}
 
 		case <-ReportAdder.ClickedCh:
-			counter, err := a.registReport()
+			count, err := a.registReport()
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			if counter != 0 {
+			if count != 0 {
 				a.Log.Println("レポート課題を登録しました。")
 			} else {
 				a.Log.Println("登録するレポート課題はありませんでした。")
 			}
 
 		case <-MinitestAdder.ClickedCh:
-			counter, err := a.registMinitest()
+			count, err := a.registMinitest()
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			if counter != 0 {
+			if count != 0 {
 				a.Log.Println("小テスト課題を登録しました。")
 			} else {
 				a.Log.Println("登録する小テスト課題はありませんでした。")
 			}
 
 		case <-ClassEnqAdder.ClickedCh:
-			counter, err := a.registClassEnq()
+			count, err := a.registClassEnq()
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			if counter != 0 {
+			if count != 0 {
 				a.Log.Println("授業アンケートを登録しました。")
 			} else {
 				a.Log.Println("登録する授業アンケートはありませんでした。")
@@ -117,28 +111,15 @@ func (a *App) registReport() (int, error) {
 	reportRows, _ := a.crawler.Report.Get()
 	counter := 0
 	for _, row := range reportRows {
-		Event := &calendar.Event{
-			Summary:     "[" + row.CourseName + "]" + row.Title,
-			Location:    "学務情報システム",
-			Description: "TaskID: " + row.TaskMetadata.ID,
-			Start: &calendar.EventDateTime{
-				DateTime: row.EndDate.Add(-time.Hour).Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-			End: &calendar.EventDateTime{
-				DateTime: row.EndDate.Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-		}
+		event := newEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 
 		// 未提出だったら・・・・・・・・・・・
-		if row.LastSubmitDate.String() == "0001-01-01 00:00:00 +0000 UTC" {
-			err := AddSchedule(Event, calendarId, a.srv)
+		if row.LastSubmitDate.String() == dateTimeNotSubmited {
+			err := AddSchedule(event, calendarId, a.srv)
 			if err != nil {
 				return -1, err
-			} else {
-				counter += 1
 			}
+			counter += 1
 		}
 	}
 	return counter, nil
@@ -147,31 +128,17 @@ func (a *App) registReport() (int, error) {
 func (a *App) registMinitest() (int, error) {
 	calendarId := "primary"
 	counter := 0
-
 	minitestRows, _ := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
-		Event := &calendar.Event{
-			Summary:     "[" + row.CourseName + "]" + row.Title,
-			Location:    "学務情報システム",
-			Description: "TaskID: " + row.TaskMetadata.ID,
-			Start: &calendar.EventDateTime{
-				DateTime: row.EndDate.Add(-time.Hour).Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-			End: &calendar.EventDateTime{
-				DateTime: row.EndDate.Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-		}
+		event := newEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
-				err := AddSchedule(Event, calendarId, a.srv)
+				err := AddSchedule(event, calendarId, a.srv)
 				if err != nil {
 					return -1, err
-				} else {
-					counter += 1
 				}
+				counter += 1
 			}
 		}
 
@@ -182,34 +149,81 @@ func (a *App) registMinitest() (int, error) {
 func (a *App) registClassEnq() (int, error) {
 	counter := 0
 	calendarId := "primary"
-
 	classEnqRows, _ := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
-		Event := &calendar.Event{
-			Summary:     "[" + row.CourseName + "]" + row.Title,
-			Location:    "学務情報システム",
-			Description: "TaskID: " + row.TaskMetadata.ID,
-			Start: &calendar.EventDateTime{
-				DateTime: row.EndDate.Add(-time.Hour).Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-			End: &calendar.EventDateTime{
-				DateTime: row.EndDate.Format("2006-01-02T15:04:05+09:00"),
-				TimeZone: "Asia/Tokyo",
-			},
-		}
+		event := newEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 
 		// 未提出だったら・・・・・・・・・・・
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
-				err := AddSchedule(Event, calendarId, a.srv)
+				err := AddSchedule(event, calendarId, a.srv)
 				if err != nil {
 					return -1, nil
-				} else {
-					counter += 1
 				}
+				counter += 1
 			}
 		}
 	}
 	return counter, nil
+}
+
+func (a *App) registAll() (int, error) {
+	cntSum := 0
+
+	ReportCounter, err := a.registReport()
+	if err != nil {
+		return 0, err
+	}
+	cntSum += ReportCounter
+
+	MinitestCounter, err := a.registMinitest()
+	if err != nil {
+		return 0, err
+	}
+	cntSum += MinitestCounter
+
+	ClassEnqCounter, err := a.registClassEnq()
+	if err != nil {
+		return 0, err
+	}
+	cntSum += ClassEnqCounter
+
+	return cntSum, nil
+}
+
+func newEvent(title string, t time.Time) *calendar.Event { // タイトルと日時を入れると Event 型を返す
+	added := time.Now().Format("2006-01-02 15:04.05")
+	Event := &calendar.Event{
+		Summary:     title,
+		Location:    "学務情報システム",
+		Description: "学情カレンダーから追加された予定です。\n学務情報システム: https://gakujo.shizuoka.ac.jp/portal/\nAdded: " + added,
+		Start: &calendar.EventDateTime{
+			DateTime: t.Add(-time.Hour).Format("2006-01-02T15:04:05+09:00"),
+			TimeZone: "Asia/Tokyo",
+		},
+		End: &calendar.EventDateTime{
+			DateTime: t.Format("2006-01-02T15:04:05+09:00"),
+			TimeZone: "Asia/Tokyo",
+		},
+	}
+	return Event
+}
+
+func (a *App) autoAddSchedule() error { // 定期実行
+	s := gocron.NewScheduler(time.Local)
+
+	_, _ = s.Every(30).Minutes().Do(func() {
+		counter, err := a.registAll()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if counter != 0 {
+			a.Log.Println("すべての予定を登録しました。")
+		} else {
+			a.Log.Println("登録する予定はありませんでした。")
+		}
+	})
+	s.StartAsync()
+	return nil
 }
