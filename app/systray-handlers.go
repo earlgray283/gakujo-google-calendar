@@ -47,6 +47,8 @@ func (a *App) OnReady() {
 	// 定期実行する
 	err = a.autoAddSchedule()
 	if err != nil {
+		a.Log.Println(err)
+		a.Log.Println("定期実行に失敗しました")
 		systray.Quit()
 	}
 
@@ -55,12 +57,16 @@ func (a *App) OnReady() {
 		case <-WebSiteOpener.ClickedCh:
 			err := a.openWebSite(googleCalendarURL)
 			if err != nil {
+				a.Log.Println(err)
+				a.Log.Println("WebSiteにアクセスできませんでした")
 				systray.Quit()
 			}
 			a.Log.Println("Google Calendarを開きます。")
 		case <-AllAdder.ClickedCh:
 			count, err := a.registAll()
 			if err != nil {
+				a.Log.Println(err)
+				a.Log.Println("タスクの登録に失敗しました")
 				systray.Quit()
 			}
 
@@ -73,6 +79,8 @@ func (a *App) OnReady() {
 		case <-ReportAdder.ClickedCh:
 			count, err := a.registReport()
 			if err != nil {
+				a.Log.Println(err)
+				a.Log.Println("タスクの登録に失敗しました")
 				systray.Quit()
 			}
 
@@ -85,6 +93,8 @@ func (a *App) OnReady() {
 		case <-MinitestAdder.ClickedCh:
 			count, err := a.registMinitest()
 			if err != nil {
+				a.Log.Println(err)
+				a.Log.Println("タスクの登録に失敗しました")
 				systray.Quit()
 			}
 
@@ -97,6 +107,8 @@ func (a *App) OnReady() {
 		case <-ClassEnqAdder.ClickedCh:
 			count, err := a.registClassEnq()
 			if err != nil {
+				a.Log.Println(err)
+				a.Log.Println("タスクの登録に失敗しました")
 				systray.Quit()
 			}
 
