@@ -110,7 +110,6 @@ func checkDoubleRegist(eventTitle string, eventEnd *calendar.EventDateTime, srv 
 		return false, err
 	}
 	checkDateTime := ttt.Add(-24 * time.Hour).Format("2006-01-02T15:04:05+09:00")
-	fmt.Println("予定の24時間前: " + checkDateTime)
 
 	// 予定の取得
 	events, err := srv.Events.List(calendarId).ShowDeleted(false).
@@ -124,12 +123,8 @@ func checkDoubleRegist(eventTitle string, eventEnd *calendar.EventDateTime, srv 
 		itemSummary := item.Summary
 		if eventTitle == itemSummary && eventEnd.DateTime == itemDateTime.DateTime {
 			//予定がかぶっていたら false を返します
-			fmt.Println("予定がかぶっています")
 			return false, nil
-		} else {
-			fmt.Println("予定がかぶっていません")
 		}
-		fmt.Println(eventEnd.DateTime + " " + item.End.DateTime)
 	}
 	// 予定がかぶってなかったら ture を返します
 	return true, nil
