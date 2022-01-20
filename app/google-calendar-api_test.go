@@ -29,6 +29,9 @@ func TestGooglecalenderapi(t *testing.T) {
 	}
 
 	cl, err := FindCalendar("学情カレンダー", service)
+	if err != nil {
+		t.Fatal(err)
+	}
 	calendarId := cl.Id
 
 	// 予定を追加
