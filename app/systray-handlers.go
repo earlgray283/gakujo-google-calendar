@@ -12,9 +12,9 @@ import (
 	"google.golang.org/api/calendar/v3"
 )
 
-const dateTimeNotSubmited = "0001-01-01 00:00:00 +0000 UTC"
+const dateTimeNotSubmited = "0001-01-01 00:00:00 +0000 UTC"//未提出の課題を選別するめのconst
 const formatAdded = "2006-01-02 15:04.05"
-const googleCalendarURL = "https://calendar.google.com/calendar/"
+const googleCalendarURL = "https://calendar.google.com/calendar/"//GoogleCalendarのURL(string参照)
 
 func (a *App) OnReady() {
 	a.Log.SetOutput(os.Stdout)
@@ -23,12 +23,14 @@ func (a *App) OnReady() {
 		a.Log.Println(err)
 		systray.Quit()
 	}
+	//タスクトレイ大元の設定
 	systray.SetIcon(iconData)
 	systray.SetTitle("Google Calender Tasktray")
 	systray.SetTooltip("Set tasks to your google calendar automaticaly")
 
 	//GoogleCalendarをWebSiteで開くためのボタン
 	WebSiteOpener := systray.AddMenuItem("Open Google Calendar in Web Site", "Open Google Calendar")
+	systray.AddSeparator()
 
 	// GoogleCalenderに登録するためのボタンの作成
 	AllAdder := systray.AddMenuItem("Add every task to calendar", "ADD all")
