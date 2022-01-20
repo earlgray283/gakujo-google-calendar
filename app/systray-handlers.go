@@ -3,7 +3,6 @@ package app
 // systray 周り
 
 import (
-	"log"
 	"os"
 	"time"
 
@@ -40,7 +39,7 @@ func (a *App) OnReady() {
 	// 定期実行する
 	err = a.autoAddSchedule()
 	if err != nil {
-		log.Fatal(err)
+		systray.Quit()
 	}
 
 	for {
@@ -48,7 +47,7 @@ func (a *App) OnReady() {
 		case <-AllAdder.ClickedCh:
 			count, err := a.registAll()
 			if err != nil {
-				log.Fatal(err)
+				systray.Quit()
 			}
 
 			if count != 0 {
@@ -60,7 +59,7 @@ func (a *App) OnReady() {
 		case <-ReportAdder.ClickedCh:
 			count, err := a.registReport()
 			if err != nil {
-				log.Fatal(err)
+				systray.Quit()
 			}
 
 			if count != 0 {
@@ -72,7 +71,7 @@ func (a *App) OnReady() {
 		case <-MinitestAdder.ClickedCh:
 			count, err := a.registMinitest()
 			if err != nil {
-				log.Fatal(err)
+				systray.Quit()
 			}
 
 			if count != 0 {
@@ -84,7 +83,7 @@ func (a *App) OnReady() {
 		case <-ClassEnqAdder.ClickedCh:
 			count, err := a.registClassEnq()
 			if err != nil {
-				log.Fatal(err)
+				systray.Quit()
 			}
 
 			if count != 0 {
@@ -215,7 +214,7 @@ func (a *App) autoAddSchedule() error { // 定期実行
 	_, _ = s.Every(30).Minutes().Do(func() {
 		counter, err := a.registAll()
 		if err != nil {
-			log.Fatal(err)
+			systray.Quit()
 		}
 
 		if counter != 0 {
