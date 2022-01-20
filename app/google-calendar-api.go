@@ -50,8 +50,8 @@ func AddSchedule(ev *calendar.Event, id string, srv *calendar.Service) error {
 func createNewCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
 	// service に title という名前のカレンダーを新規作成して、その calendar.Calendar 型を返す
 	newCalendar := &calendar.Calendar{
-		Summary: title,
-		TimeZone : "Asia/Tokyo",
+		Summary:  title,
+		TimeZone: "Asia/Tokyo",
 	}
 	createdCalendar, err := srv.Calendars.Insert(newCalendar).Do()
 	if err != nil {
