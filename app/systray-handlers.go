@@ -216,7 +216,10 @@ func (a *App) autoAddSchedule() error { // 定期実行
 	s := gocron.NewScheduler(time.Local)
 
 	_, _ = s.Every(30).Minutes().Do(func() {
-		counter, _ := a.registAll()
+		counter, err := a.registAll()
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		if counter != 0 {
 			a.Log.Println("すべての予定を登録しました。")
