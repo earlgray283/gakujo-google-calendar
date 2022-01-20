@@ -15,6 +15,7 @@ import (
 const dateTimeNotSubmited = "0001-01-01 00:00:00 +0000 UTC" //未提出の課題を選別するためのconst
 const addedAt = "2006-01-02T15:04:05+09:00"
 const googleCalendarURL = "https://calendar.google.com/calendar/" //GoogleCalendarのURL(string参照)
+const gakujoURL = "https://gakujo.shizuoka.ac.jp/portal/"
 
 func (a *App) OnReady() {
 	a.Log.SetOutput(os.Stdout)
@@ -29,7 +30,9 @@ func (a *App) OnReady() {
 	systray.SetTooltip("Set tasks to your google calendar automaticaly")
 
 	//GoogleCalendarをWebSiteで開くためのボタン
-	webSiteOpener := systray.AddMenuItem("Open Google Calendar in Web Site", "Open Google Calendar")
+	calendarOpener := systray.AddMenuItem("Open Google Calendar in Web Site", "Open Google Calendar")
+	gakujoOpener := systray.AddMenuItem("Open Gakujo Portal Site", "Open Gakujo")
+
 	systray.AddSeparator()
 
 	// GoogleCalenderに登録するためのボタンの作成
@@ -53,13 +56,22 @@ func (a *App) OnReady() {
 
 	for {
 		select {
-		case <-webSiteOpener.ClickedCh:
+		case <-calendarOpener.ClickedCh:
 			if err := a.openWebSite(googleCalendarURL); err != nil {
 				a.Log.Println(err)
 				a.Log.Println("WebSiteにアクセスできませんでした")
 				systray.Quit()
 			}
 			a.Log.Println("Google Calendarを開きます。")
+
+		case <-gakujoOpener.ClickedCh:
+			if err := a.openWebSite(gakujoURL); err != nil {
+				a.Log.Println(err)
+				a.Log.Println("websiteにアクセス出来ませんでした。")
+				systray.Quit()
+			}
+			a.Log.Println("学情ポータルサイトを開きます。")
+
 		case <-allAdder.ClickedCh:
 			count, err := a.registAll()
 			if err != nil {
