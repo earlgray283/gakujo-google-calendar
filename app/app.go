@@ -46,13 +46,18 @@ func NewApp(crawler *crawle.Crawler, srv *calendar.Service) (*App, error) {
 }
 
 func (a *App) Run() error {
+	var err error = nil
 	errC := a.crawler.Start()
 
-	go systray.Run(a.OnReady, a.OnExit)
+	go func() {
+		for {
+			err = <-errC
+			systray.Quit()
+			return
+		}
+	}()
 
-	for {
-		err := <-errC
-		systray.Quit()
-		return err
-	}
+	systray.Run(a.OnReady, a.OnExit)
+
+	return err
 }
