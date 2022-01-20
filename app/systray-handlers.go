@@ -8,11 +8,13 @@ import (
 
 	"github.com/getlantern/systray"
 	"github.com/go-co-op/gocron"
+	"github.com/skratchdot/open-golang/open"
 	"google.golang.org/api/calendar/v3"
 )
 
 const dateTimeNotSubmited = "0001-01-01 00:00:00 +0000 UTC"
 const formatAdded = "2006-01-02 15:04.05"
+const googleCalendarURL = "https://calendar.google.com/calendar/"
 
 func (a *App) OnReady() {
 	a.Log.SetOutput(os.Stdout)
@@ -24,6 +26,9 @@ func (a *App) OnReady() {
 	systray.SetIcon(iconData)
 	systray.SetTitle("Google Calender Tasktray")
 	systray.SetTooltip("Set tasks to your google calendar automaticaly")
+
+	//GoogleCalendarをWebSiteで開くためのボタン
+	WebSiteOpener := systray.AddMenuItem("Open Google Calendar in Web Site", "Open Google Calendar")
 
 	// GoogleCalenderに登録するためのボタンの作成
 	AllAdder := systray.AddMenuItem("Add every task to calendar", "ADD all")
@@ -45,6 +50,12 @@ func (a *App) OnReady() {
 
 	for {
 		select {
+		case <-WebSiteOpener.ClickedCh:
+			err := a.openWebSite(googleCalendarURL)
+			if err != nil {
+				systray.Quit()
+			}
+			a.Log.Println("Google Calendarを開きます。")
 		case <-AllAdder.ClickedCh:
 			count, err := a.registAll()
 			if err != nil {
@@ -104,6 +115,14 @@ func (a *App) OnReady() {
 func (a *App) OnExit() {
 	a.appLogFile.Close()
 	a.crawlerLogFile.Close()
+}
+
+func (a *App) openWebSite(url string) error {
+	err := open.Run(url)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (a *App) registReport() (int, error) {
