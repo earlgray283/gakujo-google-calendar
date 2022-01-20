@@ -5,6 +5,7 @@ import (
 	//"log"
 	"os"
 	"testing"
+	//"time"
 
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"google.golang.org/api/calendar/v3"
@@ -48,8 +49,15 @@ func TestGooglecalenderapi(t *testing.T) {
 			TimeZone: "Asia/Tokyo",
 		},
 	}
-	//calendarId := "primary"
-	if err := AddSchedule(event, calendarId, service); err != nil {
+
+	isAbletoAdd, err := checkDoubleRegist(event.Summary, event.End, service, calendarId)
+	if err != nil {
 		t.Fatal(err)
 	}
+	if isAbletoAdd {
+		if err := AddSchedule(event, calendarId, service); err != nil {
+			t.Fatal(err)
+		}
+	}
+	//calendarId := "primary"
 }

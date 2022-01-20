@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -50,6 +51,7 @@ func createNewCalendar(title string, srv *calendar.Service) (*calendar.Calendar,
 	// service に title という名前のカレンダーを新規作成して、その calendar.Calendar 型を返す
 	newCalendar := &calendar.Calendar{
 		Summary: title,
+		TimeZone : "Asia/Tokyo",
 	}
 	createdCalendar, err := srv.Calendars.Insert(newCalendar).Do()
 	if err != nil {
@@ -98,4 +100,36 @@ func FindCalendar(title string, srv *calendar.Service) (*calendar.Calendar, erro
 			return cl, err
 		}
 	}
+}
+
+func checkDoubleRegist(eventTitle string, eventEnd *calendar.EventDateTime, srv *calendar.Service, calendarId string) (bool, error) {
+	// 終了時刻の24時間前を作る
+	ttt, err := time.Parse("2006-01-02T15:04:05+09:00", eventEnd.DateTime)
+	if err != nil {
+		return false, err
+	}
+	checkDateTime := ttt.Add(-24 * time.Hour).Format("2006-01-02T15:04:05+09:00")
+	fmt.Println("予定の24時間前: " + checkDateTime)
+
+	// 予定の取得
+	events, err := srv.Events.List(calendarId).ShowDeleted(false).
+		SingleEvents(true).TimeMin(checkDateTime).MaxResults(50).OrderBy("startTime").Do()
+	if err != nil {
+		return false, err
+	}
+
+	for _, item := range events.Items {
+		itemDateTime := item.End
+		itemSummary := item.Summary
+		if eventTitle == itemSummary && eventEnd.DateTime == itemDateTime.DateTime {
+			//予定がかぶっていたら false を返します
+			fmt.Println("予定がかぶっています")
+			return false, nil
+		} else {
+			fmt.Println("予定がかぶっていません")
+		}
+		fmt.Println(eventEnd.DateTime + " " + item.End.DateTime)
+	}
+	// 予定がかぶってなかったら ture を返します
+	return true, nil
 }
