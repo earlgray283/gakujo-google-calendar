@@ -12,9 +12,9 @@ import (
 	"google.golang.org/api/calendar/v3"
 )
 
-const dateTimeNotSubmited = "0001-01-01 00:00:00 +0000 UTC"//未提出の課題を選別するめのconst
+const dateTimeNotSubmited = "0001-01-01 00:00:00 +0000 UTC" //未提出の課題を選別するめのconst
 const formatAdded = "2006-01-02 15:04.05"
-const googleCalendarURL = "https://calendar.google.com/calendar/"//GoogleCalendarのURL(string参照)
+const googleCalendarURL = "https://calendar.google.com/calendar/" //GoogleCalendarのURL(string参照)
 
 func (a *App) OnReady() {
 	a.Log.SetOutput(os.Stdout)
