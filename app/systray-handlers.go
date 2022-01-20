@@ -12,6 +12,7 @@ import (
 )
 
 const dateTimeNotSubmited = "0001-01-01 00:00:00 +0000 UTC"
+const formatAdded = "2006-01-02 15:04.05"
 
 func (a *App) OnReady() {
 	a.Log.SetOutput(os.Stdout)
@@ -191,17 +192,17 @@ func (a *App) registAll() (int, error) {
 }
 
 func newEvent(title string, t time.Time) *calendar.Event { // タイトルと日時を入れると Event 型を返す
-	added := time.Now().Format("2006-01-02 15:04.05")
+	added := time.Now().Format(formatAdded)
 	Event := &calendar.Event{
 		Summary:     title,
 		Location:    "学務情報システム",
 		Description: "学情カレンダーから追加された予定です。\n学務情報システム: https://gakujo.shizuoka.ac.jp/portal/\nAdded: " + added,
 		Start: &calendar.EventDateTime{
-			DateTime: t.Add(-time.Hour).Format("2006-01-02T15:04:05+09:00"),
+			DateTime: t.Add(-time.Hour).Format(formatAdded),
 			TimeZone: "Asia/Tokyo",
 		},
 		End: &calendar.EventDateTime{
-			DateTime: t.Format("2006-01-02T15:04:05+09:00"),
+			DateTime: t.Format(formatAdded),
 			TimeZone: "Asia/Tokyo",
 		},
 	}
