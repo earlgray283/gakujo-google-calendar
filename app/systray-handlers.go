@@ -37,6 +37,7 @@ func (a *App) OnReady() {
 	// quitボタンの作成
 	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 
+	// 定期実行する
 	err = a.autoAddSchedule()
 	if err != nil {
 		log.Fatal(err)
@@ -128,7 +129,6 @@ func (a *App) registReport() (int, error) {
 func (a *App) registMinitest() (int, error) {
 	calendarId := "primary"
 	counter := 0
-
 	minitestRows, _ := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
 		event := newEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
@@ -151,10 +151,8 @@ func (a *App) registMinitest() (int, error) {
 func (a *App) registClassEnq() (int, error) {
 	counter := 0
 	calendarId := "primary"
-
 	classEnqRows, _ := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
-
 		event := newEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 
 		// 未提出だったら・・・・・・・・・・・
@@ -173,30 +171,30 @@ func (a *App) registClassEnq() (int, error) {
 }
 
 func (a *App) registAll() (int, error) {
-	CounterSum := 0
+	cntSum := 0
 
 	ReportCounter, err := a.registReport()
 	if err != nil {
 		return 0, err
 	}
-	CounterSum += ReportCounter
+	cntSum += ReportCounter
 
 	MinitestCounter, err := a.registMinitest()
 	if err != nil {
 		return 0, err
 	}
-	CounterSum += MinitestCounter
+	cntSum += MinitestCounter
 
 	ClassEnqCounter, err := a.registClassEnq()
 	if err != nil {
 		return 0, err
 	}
-	CounterSum += ClassEnqCounter
+	cntSum += ClassEnqCounter
 
-	return CounterSum, nil
+	return cntSum, nil
 }
 
-func newEvent(title string, t time.Time) *calendar.Event {
+func newEvent(title string, t time.Time) *calendar.Event { // タイトルと日時を入れると Event 型を返す
 	added := time.Now().Format("2006-01-02 15:04.05")
 	Event := &calendar.Event{
 		Summary:     title,
@@ -214,7 +212,7 @@ func newEvent(title string, t time.Time) *calendar.Event {
 	return Event
 }
 
-func (a *App) autoAddSchedule() error {
+func (a *App) autoAddSchedule() error { // 定期実行
 	s := gocron.NewScheduler(time.Local)
 
 	_, _ = s.Every(30).Minutes().Do(func() {
