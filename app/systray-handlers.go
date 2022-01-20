@@ -118,9 +118,8 @@ func (a *App) registReport() (int, error) {
 			err := AddSchedule(event, calendarId, a.srv)
 			if err != nil {
 				return -1, err
-			} else {
-				counter += 1
 			}
+			counter += 1
 		}
 	}
 	return counter, nil
@@ -138,9 +137,8 @@ func (a *App) registMinitest() (int, error) {
 				err := AddSchedule(event, calendarId, a.srv)
 				if err != nil {
 					return -1, err
-				} else {
-					counter += 1
 				}
+				counter += 1
 			}
 		}
 
@@ -161,9 +159,8 @@ func (a *App) registClassEnq() (int, error) {
 				err := AddSchedule(event, calendarId, a.srv)
 				if err != nil {
 					return -1, nil
-				} else {
-					counter += 1
 				}
+				counter += 1
 			}
 		}
 	}
