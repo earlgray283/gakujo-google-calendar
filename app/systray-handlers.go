@@ -118,9 +118,8 @@ func (a *App) registReport() (int, error) {
 			err := AddSchedule(event, calendarId, a.srv)
 			if err != nil {
 				return -1, err
-			} else {
-				counter += 1
 			}
+			counter += 1
 		}
 	}
 	return counter, nil
@@ -138,9 +137,8 @@ func (a *App) registMinitest() (int, error) {
 				err := AddSchedule(event, calendarId, a.srv)
 				if err != nil {
 					return -1, err
-				} else {
-					counter += 1
 				}
+				counter += 1
 			}
 		}
 
@@ -161,9 +159,8 @@ func (a *App) registClassEnq() (int, error) {
 				err := AddSchedule(event, calendarId, a.srv)
 				if err != nil {
 					return -1, nil
-				} else {
-					counter += 1
 				}
+				counter += 1
 			}
 		}
 	}
@@ -216,7 +213,10 @@ func (a *App) autoAddSchedule() error { // 定期実行
 	s := gocron.NewScheduler(time.Local)
 
 	_, _ = s.Every(30).Minutes().Do(func() {
-		counter, _ := a.registAll()
+		counter, err := a.registAll()
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		if counter != 0 {
 			a.Log.Println("すべての予定を登録しました。")
