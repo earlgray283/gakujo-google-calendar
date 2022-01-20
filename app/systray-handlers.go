@@ -39,19 +39,19 @@ func (a *App) OnReady() {
 		case <-AllAdder.ClickedCh:
 			CounterSum := 0
 
-			ReportCounter, err := a.registerReport()
+			ReportCounter, err := a.registReport()
 			if err != nil {
 				log.Fatal(err)
 			}
 			CounterSum += ReportCounter
 
-			MinitestCounter, err := a.registerMinitest()
+			MinitestCounter, err := a.registMinitest()
 			if err != nil {
 				log.Fatal(err)
 			}
 			CounterSum += MinitestCounter
 
-			ClassEnqCounter, err := a.registerClassEnq()
+			ClassEnqCounter, err := a.registClassEnq()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -64,7 +64,7 @@ func (a *App) OnReady() {
 			}
 
 		case <-ReportAdder.ClickedCh:
-			counter, err := a.registerReport()
+			counter, err := a.registReport()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -76,7 +76,7 @@ func (a *App) OnReady() {
 			}
 
 		case <-MinitestAdder.ClickedCh:
-			counter, err := a.registerMinitest()
+			counter, err := a.registMinitest()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -88,7 +88,7 @@ func (a *App) OnReady() {
 			}
 
 		case <-ClassEnqAdder.ClickedCh:
-			counter, err := a.registerClassEnq()
+			counter, err := a.registClassEnq()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -112,7 +112,7 @@ func (a *App) OnExit() {
 	a.crawlerLogFile.Close()
 }
 
-func (a *App) registerReport() (int, error) {
+func (a *App) registReport() (int, error) {
 	calendarId := "primary"
 	reportRows, _ := a.crawler.Report.Get()
 	counter := 0
@@ -144,7 +144,7 @@ func (a *App) registerReport() (int, error) {
 	return counter, nil
 }
 
-func (a *App) registerMinitest() (int, error) {
+func (a *App) registMinitest() (int, error) {
 	calendarId := "primary"
 	counter := 0
 
@@ -179,7 +179,7 @@ func (a *App) registerMinitest() (int, error) {
 	return counter, nil
 }
 
-func (a *App) registerClassEnq() (int, error) {
+func (a *App) registClassEnq() (int, error) {
 	counter := 0
 	calendarId := "primary"
 
