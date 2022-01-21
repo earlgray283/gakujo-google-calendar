@@ -94,13 +94,12 @@ func FindOrCreateCalendar(title string, srv *calendar.Service) (*calendar.Calend
 	cl, err := findCalendar(title, srv)
 	if err != nil {
 		return nil, err
-	} else {
-		if cl == nil {
-			// カレンダーが存在しないので作成
-			return createCalendar(title, srv)
-		}
-		return cl, err
 	}
+	if cl == nil {
+		// カレンダーが存在しないので作成
+		return createCalendar(title, srv)
+	}
+	return cl, err
 }
 
 func checkDoubleRegisted(eventTitle string, eventEnd *calendar.EventDateTime, srv *calendar.Service, calendarId string) (bool, error) {
