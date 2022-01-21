@@ -40,11 +40,16 @@ func NewServiceFromToken(token *oauth2.Token) (*calendar.Service, error) {
 }
 
 func AddSchedule(ev *calendar.Event, id string, srv *calendar.Service) error {
-	_, err := srv.Events.Insert(id, ev).Do()
+	isAddable, err := checkDoubleRegist(ev.Summary, ev.End, srv, id)
 	if err != nil {
 		return err
 	}
-
+	if isAddable {
+		_, err := srv.Events.Insert(id, ev).Do()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
