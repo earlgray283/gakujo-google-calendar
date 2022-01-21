@@ -53,7 +53,7 @@ func AddSchedule(ev *calendar.Event, id string, srv *calendar.Service) error {
 	return nil
 }
 
-func createNewCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
+func createCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
 	// service に title という名前のカレンダーを新規作成して、その calendar.Calendar 型を返す
 	newCalendar := &calendar.Calendar{
 		Summary:  title,
@@ -67,7 +67,7 @@ func createNewCalendar(title string, srv *calendar.Service) (*calendar.Calendar,
 	return createdCalendar, nil
 }
 
-func exploreCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
+func findCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
 	// service に title という名前のカレンダーがあるかどうかを判定し、
 	// 存在すればカレンダーIDを string 型で返す
 	cl, err := srv.CalendarList.List().Do()
@@ -88,16 +88,16 @@ func exploreCalendar(title string, srv *calendar.Service) (*calendar.Calendar, e
 	return nil, nil
 }
 
-func FindCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
+func FindOrCreateCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
 	// title という名前のカレンダーがあれば calendar.Calendar 型で返す
 	// なければ新しく作ってそのカレンダーを calendar.Calendar 型で返す
-	cl, err := exploreCalendar(title, srv)
+	cl, err := findCalendar(title, srv)
 	if err != nil {
 		return nil, err
 	} else {
 		if cl == nil {
 			// カレンダーが存在しないので作成
-			newCalendar, err := createNewCalendar(title, srv)
+			newCalendar, err := createCalendar(title, srv)
 			if err != nil {
 				return nil, err
 			}

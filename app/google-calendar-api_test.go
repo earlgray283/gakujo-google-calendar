@@ -29,7 +29,7 @@ func TestGooglecalenderapi(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cl, err := FindCalendar("学情カレンダー", service)
+	cl, err := FindOrCreateCalendar("学情カレンダー", service)
 	if err != nil {
 		t.Fatal(err)
 	}
