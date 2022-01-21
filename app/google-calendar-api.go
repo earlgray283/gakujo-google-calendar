@@ -97,14 +97,9 @@ func FindOrCreateCalendar(title string, srv *calendar.Service) (*calendar.Calend
 	} else {
 		if cl == nil {
 			// カレンダーが存在しないので作成
-			newCalendar, err := createCalendar(title, srv)
-			if err != nil {
-				return nil, err
-			}
-			return newCalendar, nil
-		} else {
-			return cl, err
+			return createCalendar(title, srv)
 		}
+		return cl, err
 	}
 }
 

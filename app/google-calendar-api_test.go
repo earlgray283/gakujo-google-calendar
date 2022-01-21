@@ -50,11 +50,11 @@ func TestGooglecalenderapi(t *testing.T) {
 		},
 	}
 
-	isAbletoAdd, err := checkDoubleRegisted(event.Summary, event.End, service, calendarId)
+	isAddable, err := checkDoubleRegisted(event.Summary, event.End, service, calendarId)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if isAbletoAdd {
+	if isAddable {
 		if err := AddSchedule(event, calendarId, service); err != nil {
 			t.Fatal(err)
 		}

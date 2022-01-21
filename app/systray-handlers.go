@@ -134,8 +134,7 @@ func (a *App) registMinitest() (int, error) {
 
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
-				err := AddSchedule(event, calendarId, a.srv)
-				if err != nil {
+				if err := AddSchedule(event, calendarId, a.srv); err != nil {
 					return -1, err
 				}
 				counter += 1
@@ -192,7 +191,7 @@ func (a *App) registAll() (int, error) {
 }
 
 func newEvent(title string, t time.Time) *calendar.Event { // タイトルと日時を入れると Event 型を返す
-	added := time.Now().Format("2006-01-02 15:04.05")
+	added := time.Now().Format("2006-01-02 15:04:05")
 	Event := &calendar.Event{
 		Summary:     title,
 		Location:    "学務情報システム",
