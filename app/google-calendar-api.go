@@ -40,7 +40,7 @@ func NewServiceFromToken(token *oauth2.Token) (*calendar.Service, error) {
 }
 
 func AddSchedule(ev *calendar.Event, id string, srv *calendar.Service) error {
-	isAddable, err := checkDoubleRegist(ev.Summary, ev.End, srv, id)
+	isAddable, err := checkDoubleRegisted(ev.Summary, ev.End, srv, id)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func FindOrCreateCalendar(title string, srv *calendar.Service) (*calendar.Calend
 	}
 }
 
-func checkDoubleRegist(eventTitle string, eventEnd *calendar.EventDateTime, srv *calendar.Service, calendarId string) (bool, error) {
+func checkDoubleRegisted(eventTitle string, eventEnd *calendar.EventDateTime, srv *calendar.Service, calendarId string) (bool, error) {
 	// 終了時刻の24時間前を作る
 	ttt, err := time.Parse("2006-01-02T15:04:05+09:00", eventEnd.DateTime)
 	if err != nil {
@@ -131,6 +131,6 @@ func checkDoubleRegist(eventTitle string, eventEnd *calendar.EventDateTime, srv 
 			return false, nil
 		}
 	}
-	// 予定がかぶってなかったら ture を返します
+	// 予定がかぶってなかったら true を返します
 	return true, nil
 }
