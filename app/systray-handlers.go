@@ -40,7 +40,7 @@ func (a *App) OnReady() {
 	// 定期実行する
 	err = a.autoAddSchedule()
 	if err != nil {
-		log.Fatal(err)
+		systray.Quit()
 	}
 
 	for {
@@ -48,7 +48,7 @@ func (a *App) OnReady() {
 		case <-AllAdder.ClickedCh:
 			count, err := a.registAll()
 			if err != nil {
-				log.Fatal(err)
+				systray.Quit()
 			}
 
 			if count != 0 {
@@ -60,7 +60,7 @@ func (a *App) OnReady() {
 		case <-ReportAdder.ClickedCh:
 			count, err := a.registReport()
 			if err != nil {
-				log.Fatal(err)
+				systray.Quit()
 			}
 
 			if count != 0 {
@@ -72,7 +72,7 @@ func (a *App) OnReady() {
 		case <-MinitestAdder.ClickedCh:
 			count, err := a.registMinitest()
 			if err != nil {
-				log.Fatal(err)
+				systray.Quit()
 			}
 
 			if count != 0 {
@@ -84,7 +84,7 @@ func (a *App) OnReady() {
 		case <-ClassEnqAdder.ClickedCh:
 			count, err := a.registClassEnq()
 			if err != nil {
-				log.Fatal(err)
+				systray.Quit()
 			}
 
 			if count != 0 {
