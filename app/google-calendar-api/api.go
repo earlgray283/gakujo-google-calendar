@@ -62,23 +62,18 @@ func LoadTokenFromBytes(b []byte) (*oauth2.Token, error) {
 	return token, nil
 }
 
+// service に title という名前のカレンダーを新規作成して、その calendar.Calendar 型を返す
 func createCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
-	// service に title という名前のカレンダーを新規作成して、その calendar.Calendar 型を返す
 	newCalendar := &calendar.Calendar{
 		Summary:  title,
 		TimeZone: "Asia/Tokyo",
 	}
-	createdCalendar, err := srv.Calendars.Insert(newCalendar).Do()
-	if err != nil {
-		return nil, err
-	}
-
-	return createdCalendar, nil
+	return srv.Calendars.Insert(newCalendar).Do()
 }
 
+// service に title という名前のカレンダーがあるかどうかを判定し、
+// 存在すればカレンダーIDを string 型で返す
 func findCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
-	// service に title という名前のカレンダーがあるかどうかを判定し、
-	// 存在すればカレンダーIDを string 型で返す
 	cl, err := srv.CalendarList.List().Do()
 	if err != nil {
 		return nil, err
@@ -97,20 +92,20 @@ func findCalendar(title string, srv *calendar.Service) (*calendar.Calendar, erro
 	return nil, nil
 }
 
+// title という名前のカレンダーがあれば calendar.Calendar 型で返す
+// なければ新しく作ってそのカレンダーを calendar.Calendar 型で返す
 func FindOrCreateCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
-	// title という名前のカレンダーがあれば calendar.Calendar 型で返す
-	// なければ新しく作ってそのカレンダーを calendar.Calendar 型で返す
 	cl, err := findCalendar(title, srv)
 	if err != nil {
 		return nil, err
 	}
 	if cl == nil {
-		// カレンダーが存在しないので作成
 		return createCalendar(title, srv)
 	}
 	return cl, err
 }
 
+// 予定がかぶってなかったら true を返します
 func checkDoubleRegisted(eventTitle string, eventEnd *calendar.EventDateTime, srv *calendar.Service, calendarId string) (bool, error) {
 	// 終了時刻の24時間前を作る
 	ttt, err := time.Parse("2006-01-02T15:04:05+09:00", eventEnd.DateTime)
@@ -130,15 +125,15 @@ func checkDoubleRegisted(eventTitle string, eventEnd *calendar.EventDateTime, sr
 		itemDateTime := item.End
 		itemSummary := item.Summary
 		if eventTitle == itemSummary && eventEnd.DateTime == itemDateTime.DateTime {
-			//予定がかぶっていたら false を返します
 			return false, nil
 		}
 	}
-	// 予定がかぶってなかったら true を返します
+
 	return true, nil
 }
 
-func NewGakujoEvent(title string, t time.Time) *calendar.Event { // タイトルと日時を入れると Event 型を返す
+// タイトルと日時を入れると Event 型を返す
+func NewGakujoEvent(title string, t time.Time) *calendar.Event {
 	added := time.Now().Format(formatAddedAt)
 	Event := &calendar.Event{
 		Summary:     title,

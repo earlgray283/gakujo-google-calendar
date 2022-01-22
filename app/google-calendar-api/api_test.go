@@ -1,13 +1,9 @@
 package calendar
 
 import (
-	//"fmt"
-	//"log"
 	"os"
 	"path/filepath"
 	"testing"
-
-	//"time"
 
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"google.golang.org/api/calendar/v3"

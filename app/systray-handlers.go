@@ -151,8 +151,6 @@ func (a *App) registReport() (int, error) {
 	counter := 0
 	for _, row := range reportRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-
-		// 未提出だったら・・・・・・・・・・・
 		if row.LastSubmitDate.String() == dateTimeNotSubmited {
 			if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
 				return -1, err
@@ -169,7 +167,6 @@ func (a *App) registMinitest() (int, error) {
 	minitestRows, _ := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
 				if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
@@ -189,8 +186,6 @@ func (a *App) registClassEnq() (int, error) {
 	classEnqRows, _ := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-
-		// 未提出だったら・・・・・・・・・・・
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
 				if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
