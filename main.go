@@ -1,17 +1,22 @@
 package main
 
 import (
+	_ "embed"
 	"log"
 
 	"github.com/earlgray283/gakujo-google-calendar/app"
 	"github.com/earlgray283/gakujo-google-calendar/app/crawle"
+	calendar "github.com/earlgray283/gakujo-google-calendar/app/google-calendar-api"
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
 )
+
+//go:embed credentials.json
+var CredentialsJsonByte []byte
 
 func main() {
 	config, err := app.LoadConfig(util.DefaultConfigDir())
 	if err != nil {
-		config, err = app.GenerateConfig()
+		config, err = app.GenerateConfig(CredentialsJsonByte)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -25,7 +30,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	srv, err := app.NewServiceFromToken(config.Token)
+	srv, err := calendar.NewService(CredentialsJsonByte, config.Token)
 	if err != nil {
 		log.Fatal(err)
 	}

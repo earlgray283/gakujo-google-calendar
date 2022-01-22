@@ -1,11 +1,9 @@
-package app
+package calendar
 
 import (
-	//"fmt"
-	//"log"
 	"os"
+	"path/filepath"
 	"testing"
-	//"time"
 
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"google.golang.org/api/calendar/v3"
@@ -16,15 +14,18 @@ func TestGooglecalenderapi(t *testing.T) {
 		t.Skip("Skipping testing in CI environment")
 	}
 
-	config, err := LoadConfig(util.DefaultConfigDir())
+	configDir := util.DefaultConfigDir()
+	b, err := os.ReadFile(filepath.Join(configDir, "token.json"))
 	if err != nil {
-		config, err = GenerateConfig()
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Fatal(err)
 	}
+	token, err := LoadTokenFromBytes(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	credentialsJsonByte, _ := os.ReadFile("../../credentials.json")
 
-	service, err := NewServiceFromToken(config.Token)
+	service, err := NewService(credentialsJsonByte, token)
 	if err != nil {
 		t.Fatal(err)
 	}

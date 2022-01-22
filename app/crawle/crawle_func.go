@@ -11,10 +11,10 @@ func (c *Crawler) crawleMinitestRows(retryCount int) error {
 		err  error
 		rows []model.MinitestRow
 	)
-	c.gc.Lock()
-	defer c.gc.Unlock()
 	c.Minitest.Lock()
 	defer c.Minitest.Unlock()
+	c.gc.Lock()
+	defer c.gc.Unlock()
 	c.Log.Println("start crawling minitest")
 	for i := 0; i < retryCount; i++ {
 		rows, err = c.gc.c.LatestMinitestRows()
@@ -38,10 +38,10 @@ func (c *Crawler) crawleReportRows(retryCount int) error {
 		err  error
 		rows []model.ReportRow
 	)
-	c.gc.Lock()
-	defer c.gc.Unlock()
 	c.Report.Lock()
 	defer c.Report.Unlock()
+	c.gc.Lock()
+	defer c.gc.Unlock()
 	c.Log.Println("start crawling report")
 	for i := 0; i < retryCount; i++ {
 		rows, err = c.gc.c.LatestReportRows()
@@ -65,10 +65,10 @@ func (c *Crawler) crawleClassEnqRows(retryCount int) error {
 		err  error
 		rows []model.ClassEnqRow
 	)
-	c.gc.Lock()
-	defer c.gc.Unlock()
 	c.Classenq.Lock()
 	defer c.Classenq.Unlock()
+	c.gc.Lock()
+	defer c.gc.Unlock()
 	c.Log.Println("start crawling classenq")
 	for i := 0; i < retryCount; i++ {
 		rows, err = c.gc.c.LatestClassEnqRows()
