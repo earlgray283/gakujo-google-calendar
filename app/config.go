@@ -18,9 +18,6 @@ const (
 	FmtAppLogFile     = "app_log_2006_01_02_15_04_05.txt"
 )
 
-//go:embed credentials.json
-var CredentialsJsonByte []byte
-
 type Config struct {
 	Username string
 	Password string
@@ -66,11 +63,11 @@ func SaveConfig(config *Config, configDir string) error {
 	return json.NewEncoder(f2).Encode(config.Token)
 }
 
-func GenerateConfig() (*Config, error) {
+func GenerateConfig(jsonKey []byte) (*Config, error) {
 	ctx := context.Background()
 
 	//スコープの設定
-	config, err := google.ConfigFromJSON(CredentialsJsonByte, calendar.Scope)
+	config, err := google.ConfigFromJSON(jsonKey, calendar.Scope)
 	if err != nil {
 		return nil, err
 	}

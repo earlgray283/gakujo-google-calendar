@@ -27,7 +27,7 @@ func TestGooglecalenderapi(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	credentialsJsonByte, _ := os.ReadFile("../credentials.json")
+	credentialsJsonByte, _ := os.ReadFile("../../credentials.json")
 
 	service, err := NewService(credentialsJsonByte, token)
 	if err != nil {
