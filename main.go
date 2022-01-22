@@ -5,6 +5,7 @@ import (
 
 	"github.com/earlgray283/gakujo-google-calendar/app"
 	"github.com/earlgray283/gakujo-google-calendar/app/crawle"
+	calendar "github.com/earlgray283/gakujo-google-calendar/app/google-calendar-api"
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
 )
 
@@ -25,7 +26,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	srv, err := app.NewServiceFromToken(config.Token)
+	srv, err := calendar.NewService(app.CredentialsJsonByte, config.Token)
 	if err != nil {
 		log.Fatal(err)
 	}

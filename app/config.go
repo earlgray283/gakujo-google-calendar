@@ -2,21 +2,24 @@ package app
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 
+	calendar "github.com/earlgray283/gakujo-google-calendar/app/google-calendar-api"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	calendar "google.golang.org/api/calendar/v3"
 )
 
 const (
 	FmtCrawlerLogFile = "crawler_log_2006_01_02_15_04_05.txt"
 	FmtAppLogFile     = "app_log_2006_01_02_15_04_05.txt"
 )
+
+//go:embed credentials.json
+var CredentialsJsonByte []byte
 
 type Config struct {
 	Username string
@@ -29,15 +32,15 @@ func LoadConfig(configDir string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	f, err := os.Open(filepath.Join(configDir, "token.json"))
+	b, err := os.ReadFile(filepath.Join(configDir, "token.json"))
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	tok := &oauth2.Token{}
-	if err := json.NewDecoder(f).Decode(tok); err != nil {
+	tok, err := calendar.LoadTokenFromBytes(b)
+	if err != nil {
 		return nil, err
 	}
+
 	return &Config{
 		Username: envMap["GAKUJO_USERNAME"],
 		Password: envMap["GAKUJO_PASSWORD"],
@@ -66,10 +69,8 @@ func SaveConfig(config *Config, configDir string) error {
 func GenerateConfig() (*Config, error) {
 	ctx := context.Background()
 
-	fmt.Println(string(CredentialsJsonByte))
-
 	//スコープの設定
-	config, err := google.ConfigFromJSON(CredentialsJsonByte, calendar.CalendarScope)
+	config, err := google.ConfigFromJSON(CredentialsJsonByte, calendar.Scope)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,9 @@
-package app
+package calendar
 
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 
 	"time"
@@ -13,8 +14,8 @@ import (
 	"google.golang.org/api/option"
 )
 
-//go:embed credentials.json
-var CredentialsJsonByte []byte
+const formatAddedAt = "2006-01-02T15:04:05+09:00"
+const Scope string = calendar.CalendarScope
 
 // コンソールにURLを表示して、コンソールにAuthCodeを貼り付けてやるやつ。テスト用。
 //lint:ignore U1000 because of test
@@ -29,9 +30,9 @@ func getLoginCodeFromStdin(URL string) (string, error) {
 	return authCode, nil
 }
 
-func NewServiceFromToken(token *oauth2.Token) (*calendar.Service, error) {
+func NewService(jsonKey []byte, token *oauth2.Token) (*calendar.Service, error) {
 	ctx := context.Background()
-	config, err := google.ConfigFromJSON(CredentialsJsonByte, calendar.CalendarScope)
+	config, err := google.ConfigFromJSON(jsonKey, calendar.CalendarScope)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +52,14 @@ func AddSchedule(ev *calendar.Event, id string, srv *calendar.Service) error {
 		}
 	}
 	return nil
+}
+
+func LoadTokenFromBytes(b []byte) (*oauth2.Token, error) {
+	token := &oauth2.Token{}
+	if err := json.Unmarshal(b, token); err != nil {
+		return nil, err
+	}
+	return token, nil
 }
 
 func createCalendar(title string, srv *calendar.Service) (*calendar.Calendar, error) {
@@ -127,4 +136,22 @@ func checkDoubleRegisted(eventTitle string, eventEnd *calendar.EventDateTime, sr
 	}
 	// 予定がかぶってなかったら true を返します
 	return true, nil
+}
+
+func NewGakujoEvent(title string, t time.Time) *calendar.Event { // タイトルと日時を入れると Event 型を返す
+	added := time.Now().Format(formatAddedAt)
+	Event := &calendar.Event{
+		Summary:     title,
+		Location:    "学務情報システム",
+		Description: "学情カレンダーから追加された予定です。\n学務情報システム: https://gakujo.shizuoka.ac.jp/portal/\nAdded: " + added,
+		Start: &calendar.EventDateTime{
+			DateTime: t.Add(-time.Hour).Format(formatAddedAt),
+			TimeZone: "Asia/Tokyo",
+		},
+		End: &calendar.EventDateTime{
+			DateTime: t.Format(formatAddedAt),
+			TimeZone: "Asia/Tokyo",
+		},
+	}
+	return Event
 }
