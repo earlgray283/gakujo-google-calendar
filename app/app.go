@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/earlgray283/gakujo-google-calendar/app/crawle"
+	mycalendar "github.com/earlgray283/gakujo-google-calendar/app/google-calendar-api"
 	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"github.com/getlantern/systray"
-	"google.golang.org/api/calendar/v3"
+	calendar "google.golang.org/api/calendar/v3"
 )
 
 type App struct {
@@ -23,6 +24,8 @@ type App struct {
 	recentTaskItem  *systray.MenuItem
 	lastSyncItem    *systray.MenuItem
 	unSubmittedItem *systray.MenuItem
+
+	calendarId string
 }
 
 func NewApp(crawler *crawle.Crawler, srv *calendar.Service) (*App, error) {
@@ -40,12 +43,16 @@ func NewApp(crawler *crawle.Crawler, srv *calendar.Service) (*App, error) {
 	}
 	crawler.Log.SetOutput(crawlerFile)
 
+	cl, err := mycalendar.FindOrCreateCalendar("学情カレンダー", srv)
+	clid := cl.Id
+
 	return &App{
 		crawler:        crawler,
 		srv:            srv,
 		Log:            logger,
 		appLogFile:     appFile,
 		crawlerLogFile: crawlerFile,
+		calendarId:     clid,
 	}, nil
 }
 

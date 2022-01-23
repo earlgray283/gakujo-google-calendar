@@ -139,14 +139,13 @@ func (a *App) startRecentTaskUpdater() {
 }
 
 func (a *App) registReport() (int, error) {
-	calendarId := "primary"
 	reportRows, _ := a.crawler.Report.Get()
 	counter := 0
 	for _, row := range reportRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 		if row.EndDate.After(time.Now()) {
 			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
-				if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
+				if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
 					return -1, err
 				}
 				counter += 1
@@ -157,14 +156,13 @@ func (a *App) registReport() (int, error) {
 }
 
 func (a *App) registMinitest() (int, error) {
-	calendarId := "primary"
 	counter := 0
 	minitestRows, _ := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
-				if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
+				if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
 					return -1, err
 				}
 				counter += 1
@@ -176,13 +174,12 @@ func (a *App) registMinitest() (int, error) {
 
 func (a *App) registClassEnq() (int, error) {
 	counter := 0
-	calendarId := "primary"
 	classEnqRows, _ := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
-				if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
+				if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
 					return -1, nil
 				}
 				counter += 1
