@@ -2,7 +2,6 @@ package calendar
 
 import (
 	"context"
-	_ "embed"
 	"encoding/json"
 	"fmt"
 

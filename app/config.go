@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	_ "embed"
 	"encoding/json"
 	"os"
 	"path/filepath"
