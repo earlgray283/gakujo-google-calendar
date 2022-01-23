@@ -21,6 +21,8 @@ type App struct {
 	crawlerLogFile *os.File
 
 	recentTaskItem *systray.MenuItem
+	lastSyncItem *systray.MenuItem
+	unSubmittedItem *systray.MenuItem
 }
 
 func NewApp(crawler *crawle.Crawler, srv *calendar.Service) (*App, error) {

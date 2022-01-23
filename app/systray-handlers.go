@@ -5,6 +5,7 @@ package app
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	calendar "github.com/earlgray283/gakujo-google-calendar/app/google-calendar-api"
@@ -33,6 +34,10 @@ func (a *App) OnReady() {
 
 	systray.AddSeparator()
 
+	// 未提出課題数
+	a.unSubmittedItem = systray.AddMenuItem("UnSubmitted task(s): ", "unSubmitted")
+
+	// 直近の課題
 	a.recentTaskItem = systray.AddMenuItem("Recent task: ", "task within 1 day")
 	a.startRecentTaskUpdater()
 
@@ -44,6 +49,10 @@ func (a *App) OnReady() {
 	minitestAdder := systray.AddMenuItem("Add minitest to calendar", "ADD minitest")
 	classEnqAdder := systray.AddMenuItem("Add classenq to calendar", "ADD classenq")
 
+	systray.AddSeparator()
+
+	// 最終同期
+	a.lastSyncItem = systray.AddMenuItem("Last sync: ", "lastSync")
 	systray.AddSeparator()
 
 	// quitボタンの作成
@@ -142,22 +151,6 @@ func (a *App) openWebSite(url string) error {
 	return open.Run(url)
 }
 
-func (a *App) registReport() (int, error) {
-	calendarId := "primary"
-	reportRows, _ := a.crawler.Report.Get()
-	counter := 0
-	for _, row := range reportRows {
-		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-		if row.LastSubmitDate.String() == dateTimeNotSubmited {
-			if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
-				return -1, err
-			}
-			counter += 1
-		}
-	}
-	return counter, nil
-}
-
 func (a *App) startRecentTaskUpdater() {
 	s := gocron.NewScheduler(time.Local)
 
@@ -188,6 +181,22 @@ func (a *App) startRecentTaskUpdater() {
 	})
 
 	s.StartAsync()
+}
+
+func (a *App) registReport() (int, error) {
+	calendarId := "primary"
+	reportRows, _ := a.crawler.Report.Get()
+	counter := 0
+	for _, row := range reportRows {
+		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
+		if row.LastSubmitDate.String() == dateTimeNotSubmited {
+			if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
+				return -1, err
+			}
+			counter += 1
+		}
+	}
+	return counter, nil
 }
 
 func (a *App) registMinitest() (int, error) {
@@ -248,6 +257,8 @@ func (a *App) registAll() (int, error) {
 	}
 	cntSum += ClassEnqCounter
 
+	a.refreshMessage()
+
 	return cntSum, nil
 }
 
@@ -268,4 +279,40 @@ func (a *App) autoAddSchedule() error { // 定期実行
 	})
 	s.StartAsync()
 	return nil
+}
+
+func (a *App) refreshMessage() {
+	cnt := strconv.Itoa(a.countUnSubmitted())
+	a.unSubmittedItem.SetTitle("UnSubmitted task(s): " + cnt)
+	a.lastSyncItem.SetTitle("Last sync: " + time.Now().Format("2006-01-02 15:04:05"))
+	systray.SetTitle("Gakujo-Clandar\n You have " + cnt + " task(s).")
+}
+
+func (a *App) countUnSubmitted() int {
+	cnt := 0
+	reportRows, _ := a.crawler.Report.Get()
+	minitestRows, _ := a.crawler.Minitest.Get()
+	classEnqRows, _ := a.crawler.Classenq.Get()
+
+	for _, row := range reportRows {
+		if row.LastSubmitDate.String() == dateTimeNotSubmited {
+			cnt++
+		}
+	}
+	for _, row := range minitestRows {
+		if row.SubmitStatus == "未提出" {
+			if time.Now().Before(row.EndDate) {
+				cnt++
+			}
+		}
+	}
+	for _, row := range classEnqRows {
+		if row.SubmitStatus == "未提出" {
+			if time.Now().Before(row.EndDate) {
+				cnt++
+			}
+		}
+	}
+
+	return cnt
 }
