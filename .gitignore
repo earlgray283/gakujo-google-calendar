@@ -2,3 +2,5 @@
 credentials.json
 token.json
 .DS_Store
+*.zip
+gakujo-google-calendar_*_*
