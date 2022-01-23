@@ -25,33 +25,33 @@ func (a *App) OnReady() {
 	//タスクトレイ大元の設定
 	systray.SetIcon(assets.IconGakujo)
 	systray.SetTitle("")
-	systray.SetTooltip("Set tasks to your google calendar automatically.")
+	systray.SetTooltip("Gakujo-Google-Calendar")
 
 	// 直近の課題
-	systray.AddMenuItem("Recent task: ", "Recent task")
-	a.recentTaskItem = systray.AddMenuItem("Recent task: ", "task within 1 day")
+	systray.AddMenuItem("直近の課題", "直近の課題")
+	a.recentTaskItem = systray.AddMenuItem("読み込んでいます...", "締切が最も近い課題です。")
 	a.startRecentTaskUpdater()
 
 	// 未提出課題数
-	a.unSubmittedItem = systray.AddMenuItem("UnSubmitted task(s): ", "your task(s) to do")
+	a.unSubmittedItem = systray.AddMenuItem("読み込んでいます...", "未提出の課題")
 
 	systray.AddSeparator()
 
 	//GoogleCalendar, Gakujo を開く
-	calendarOpener := systray.AddMenuItem("Open Google Calendar in Web Site", "Open Google Calendar")
-	gakujoOpener := systray.AddMenuItem("Open Gakujo Portal Site", "Open Gakujo")
+	calendarOpener := systray.AddMenuItem("Googleカレンダーを開く", "Googleカレンダーを開く")
+	gakujoOpener := systray.AddMenuItem("学情を開く", "学情を開く")
 
 	systray.AddSeparator()
 
 	// GoogleCalenderに登録するためのボタンの作成
-	allAdder := systray.AddMenuItem("Add every task to calendar", "update your google calendar")
+	allAdder := systray.AddMenuItem("Googleカレンダーに課題を追加する", "Googleカレンダーに課題を追加する")
 
 	// 最終同期
-	a.lastSyncItem = systray.AddMenuItem("Last sync: ", "last updated at.")
+	a.lastSyncItem = systray.AddMenuItem("最初の更新をしています...", "最終同期")
 	systray.AddSeparator()
 
 	// quitボタンの作成
-	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
+	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
 
 	// 定期実行する
 	if err := a.autoAddSchedule(); err != nil {
@@ -242,10 +242,10 @@ func (a *App) autoAddSchedule() error { // 定期実行
 func (a *App) updateItems() {
 	cnt := strconv.Itoa(a.countUnSubmitted())
 	timeNow := time.Now().Format("2006-01-02 15:04:05")
-	a.unSubmittedItem.SetTitle("UnSubmitted task(s): " + cnt)
-	a.unSubmittedItem.SetTooltip("you have " + cnt + "task(s) to do.")
-	a.lastSyncItem.SetTitle("Last sync: " + timeNow)
-	a.lastSyncItem.SetTooltip("your google calendar was updated at " + timeNow)
+	a.unSubmittedItem.SetTitle("未提出の課題が " + cnt + " 件あります。")
+	a.unSubmittedItem.SetTooltip("未提出の課題が " + cnt + " 件あります。")
+	a.lastSyncItem.SetTitle("最終更新: " + timeNow)
+	a.lastSyncItem.SetTooltip("最終更新: " + timeNow)
 }
 
 func (a *App) countUnSubmitted() int {
