@@ -44,6 +44,9 @@ func NewApp(crawler *crawle.Crawler, srv *calendar.Service) (*App, error) {
 	crawler.Log.SetOutput(crawlerFile)
 
 	cl, err := mycalendar.FindOrCreateCalendar("学情カレンダー", srv)
+	if err != nil {
+		return nil, err
+	}
 	clid := cl.Id
 
 	return &App{
