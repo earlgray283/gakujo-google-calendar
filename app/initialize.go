@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/earlgray283/gakujo-google-calendar/assets"
 	"github.com/skratchdot/open-golang/open"
 )
 
@@ -19,8 +20,10 @@ type AuthFormInfo struct {
 
 func GetAuthInfoFromBrowser(url string) (*AuthFormInfo, error) {
 	authFormInfo := AuthFormInfo{}
+	errC := make(chan error)
+	sigC := make(chan struct{})
 
-	t, err := template.ParseFiles("template/auth.html")
+	t, err := template.ParseFS(assets.HtmlAuth, "html/auth.html")
 	if err != nil {
 		log.Fatalf("template error: %v", err)
 	}
@@ -71,18 +74,30 @@ func GetAuthInfoFromBrowser(url string) (*AuthFormInfo, error) {
 		authFormInfo.Password = r.FormValue("password")
 		authFormInfo.Logincode = r.FormValue("logincode")
 
-		log.Println("Server shutdown")
-		_ = srv.Shutdown(context.Background())
+		rw.WriteHeader(http.StatusOK)
+		_, _ = rw.Write([]byte("Registration succeed! You can close this page."))
+
+		sigC <- struct{}{}
 	})
 
 	if err := open.Run("http://localhost:8080"); err != nil {
 		return nil, err
 	}
 	srv.Handler = mux
-	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-		return nil, err
+	go func() {
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+
+	for {
+		select {
+		case err := <-errC:
+			return nil, err
+		case <-sigC:
+			log.Println("Server shutdown")
+			_ = srv.Shutdown(context.Background())
+			return &authFormInfo, nil
+		}
 	}
-
-	return &authFormInfo, nil
-
 }
