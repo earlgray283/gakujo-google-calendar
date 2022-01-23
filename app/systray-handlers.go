@@ -25,11 +25,11 @@ func (a *App) OnReady() {
 	a.crawler.Log.SetOutput(os.Stdout)
 	//タスクトレイ大元の設定
 	systray.SetIcon(assets.IconGakujo)
-	systray.SetTitle("Gakujo-Google-Calendar")
+	systray.SetTitle("")
 	systray.SetTooltip("Set tasks to your google calendar automatically.")
 
 	// 直近の課題
-	recentTask := systray.AddMenuItem("Recent task: ", "Recent task")
+	systray.AddMenuItem("Recent task: ", "Recent task")
 	a.recentTaskItem = systray.AddMenuItem("Recent task: ", "task within 1 day")
 	a.startRecentTaskUpdater()
 
@@ -46,11 +46,6 @@ func (a *App) OnReady() {
 
 	// GoogleCalenderに登録するためのボタンの作成
 	allAdder := systray.AddMenuItem("Add every task to calendar", "update your google calendar")
-	/*
-		reportAdder := systray.AddMenuItem("Add report to calendar", "ADD report")
-		minitestAdder := systray.AddMenuItem("Add minitest to calendar", "ADD minitest")
-		classEnqAdder := systray.AddMenuItem("Add classenq to calendar", "ADD classenq")
-	*/
 
 	// 最終同期
 	a.lastSyncItem = systray.AddMenuItem("Last sync: ", "last updated at.")
@@ -94,53 +89,10 @@ func (a *App) OnReady() {
 			} else {
 				a.Log.Println("登録する課題はありませんでした。")
 			}
-			/*
-				case <-reportAdder.ClickedCh:
-					count, err := a.registReport()
-					if err != nil {
-						a.Log.Println(err)
-						a.Log.Println("タスクの登録に失敗しました")
-						systray.Quit()
-					}
-					if count != 0 {
-						a.Log.Println("レポート課題を登録しました。")
-					} else {
-						a.Log.Println("登録するレポート課題はありませんでした。")
-					}
-
-				case <-minitestAdder.ClickedCh:
-					count, err := a.registMinitest()
-					if err != nil {
-						a.Log.Println(err)
-						a.Log.Println("タスクの登録に失敗しました")
-						systray.Quit()
-					}
-					if count != 0 {
-						a.Log.Println("小テスト課題を登録しました。")
-					} else {
-						a.Log.Println("登録する小テスト課題はありませんでした。")
-					}
-
-				case <-classEnqAdder.ClickedCh:
-					count, err := a.registClassEnq()
-					if err != nil {
-						a.Log.Println(err)
-						a.Log.Println("タスクの登録に失敗しました")
-						systray.Quit()
-					}
-
-					if count != 0 {
-						a.Log.Println("授業アンケートを登録しました。")
-					} else {
-						a.Log.Println("登録する授業アンケートはありませんでした。")
-					}
-			*/
 		case <-mQuit.ClickedCh:
 			a.Log.Println("タスクトレイアプリを終了します。")
 			systray.Quit()
 			return
-
-		case <-recentTask.ClickedCh:
 		}
 	}
 }
@@ -192,11 +144,13 @@ func (a *App) registReport() (int, error) {
 	counter := 0
 	for _, row := range reportRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-		if row.LastSubmitDate.String() == dateTimeNotSubmitted {
-			if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
-				return -1, err
+		if row.EndDate.After(time.Now()) {
+			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
+				if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
+					return -1, err
+				}
+				counter += 1
 			}
-			counter += 1
 		}
 	}
 	return counter, nil
@@ -208,15 +162,16 @@ func (a *App) registMinitest() (int, error) {
 	minitestRows, _ := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) {
-				if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
-					return -1, err
+		if row.EndDate.After(time.Now()) {
+			if row.SubmitStatus == "未提出" {
+				if time.Now().Before(row.EndDate) {
+					if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
+						return -1, err
+					}
+					counter += 1
 				}
-				counter += 1
 			}
 		}
-
 	}
 	return counter, nil
 }
@@ -227,12 +182,14 @@ func (a *App) registClassEnq() (int, error) {
 	classEnqRows, _ := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) {
-				if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
-					return -1, nil
+		if row.EndDate.After(time.Now()) {
+			if row.SubmitStatus == "未提出" {
+				if time.Now().Before(row.EndDate) {
+					if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
+						return -1, nil
+					}
+					counter += 1
 				}
-				counter += 1
 			}
 		}
 	}
@@ -260,7 +217,7 @@ func (a *App) registAll() (int, error) {
 	}
 	cntSum += ClassEnqCounter
 
-	a.refreshMessage()
+	a.updateItems()
 
 	return cntSum, nil
 }
@@ -284,14 +241,13 @@ func (a *App) autoAddSchedule() error { // 定期実行
 	return nil
 }
 
-func (a *App) refreshMessage() {
+func (a *App) updateItems() {
 	cnt := strconv.Itoa(a.countUnSubmitted())
 	timeNow := time.Now().Format("2006-01-02 15:04:05")
 	a.unSubmittedItem.SetTitle("UnSubmitted task(s): " + cnt)
 	a.unSubmittedItem.SetTooltip("you have " + cnt + "task(s) to do.")
 	a.lastSyncItem.SetTitle("Last sync: " + timeNow)
 	a.lastSyncItem.SetTooltip("your google calendar was updated at " + timeNow)
-	systray.SetTitle("Gakujo-Clandar\n You have " + cnt + " task(s).")
 }
 
 func (a *App) countUnSubmitted() int {
@@ -301,24 +257,29 @@ func (a *App) countUnSubmitted() int {
 	classEnqRows, _ := a.crawler.Classenq.Get()
 
 	for _, row := range reportRows {
-		if row.LastSubmitDate.String() == dateTimeNotSubmitted {
-			cnt++
+		if row.EndDate.After(time.Now()) {
+			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
+				cnt++
+			}
 		}
 	}
 	for _, row := range minitestRows {
-		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) {
-				cnt++
+		if row.EndDate.After(time.Now()) {
+			if row.SubmitStatus == "未提出" {
+				if time.Now().Before(row.EndDate) {
+					cnt++
+				}
 			}
 		}
 	}
 	for _, row := range classEnqRows {
-		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) {
-				cnt++
+		if row.EndDate.After(time.Now()) {
+			if row.SubmitStatus == "未提出" {
+				if time.Now().Before(row.EndDate) {
+					cnt++
+				}
 			}
 		}
 	}
-
 	return cnt
 }
