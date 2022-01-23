@@ -15,7 +15,7 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
-const dateTimeNotSubmited = "0001-01-01 00:00:00 +0000 UTC" //未提出の課題を選別するためのconst
+const dateTimeNotSubmitted = "0001-01-01 00:00:00 +0000 UTC" //未提出の課題を選別するためのconst
 
 const googleCalendarURL = "https://calendar.google.com/calendar/" //GoogleCalendarのURL(string参照)
 const gakujoURL = "https://gakujo.shizuoka.ac.jp/portal/"
@@ -26,7 +26,7 @@ func (a *App) OnReady() {
 	//タスクトレイ大元の設定
 	systray.SetIcon(assets.IconGakujo)
 	systray.SetTitle("")
-	systray.SetTooltip("Set tasks to your google calendar automaticaly")
+	systray.SetTooltip("Set tasks to your google calendar automatically")
 
 	//GoogleCalendarをWebSiteで開くためのボタン
 	calendarOpener := systray.AddMenuItem("Open Google Calendar in Web Site", "Open Google Calendar")
@@ -189,7 +189,7 @@ func (a *App) registReport() (int, error) {
 	counter := 0
 	for _, row := range reportRows {
 		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-		if row.LastSubmitDate.String() == dateTimeNotSubmited {
+		if row.LastSubmitDate.String() == dateTimeNotSubmitted {
 			if err := calendar.AddSchedule(event, calendarId, a.srv); err != nil {
 				return -1, err
 			}
@@ -295,7 +295,7 @@ func (a *App) countUnSubmitted() int {
 	classEnqRows, _ := a.crawler.Classenq.Get()
 
 	for _, row := range reportRows {
-		if row.LastSubmitDate.String() == dateTimeNotSubmited {
+		if row.LastSubmitDate.String() == dateTimeNotSubmitted {
 			cnt++
 		}
 	}

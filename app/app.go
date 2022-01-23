@@ -20,8 +20,8 @@ type App struct {
 	appLogFile     *os.File
 	crawlerLogFile *os.File
 
-	recentTaskItem *systray.MenuItem
-	lastSyncItem *systray.MenuItem
+	recentTaskItem  *systray.MenuItem
+	lastSyncItem    *systray.MenuItem
 	unSubmittedItem *systray.MenuItem
 }
 
