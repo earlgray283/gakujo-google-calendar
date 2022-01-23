@@ -25,34 +25,35 @@ func (a *App) OnReady() {
 	a.crawler.Log.SetOutput(os.Stdout)
 	//タスクトレイ大元の設定
 	systray.SetIcon(assets.IconGakujo)
-	systray.SetTitle("")
-	systray.SetTooltip("Set tasks to your google calendar automatically")
+	systray.SetTitle("Gakujo-Google-Calendar")
+	systray.SetTooltip("Set tasks to your google calendar automatically.")
 
-	//GoogleCalendarをWebSiteで開くためのボタン
+	// 直近の課題
+	recentTask := systray.AddMenuItem("Recent task: ","Recent task")
+	a.recentTaskItem = systray.AddMenuItem("Recent task: ", "task within 1 day")
+	a.startRecentTaskUpdater()
+
+	// 未提出課題数
+	a.unSubmittedItem = systray.AddMenuItem("UnSubmitted task(s): ", "your task(s) to do")
+
+	systray.AddSeparator()
+	
+	//GoogleCalendar, Gakujo を開く
 	calendarOpener := systray.AddMenuItem("Open Google Calendar in Web Site", "Open Google Calendar")
 	gakujoOpener := systray.AddMenuItem("Open Gakujo Portal Site", "Open Gakujo")
 
 	systray.AddSeparator()
 
-	// 未提出課題数
-	a.unSubmittedItem = systray.AddMenuItem("UnSubmitted task(s): ", "unSubmitted")
-
-	// 直近の課題
-	a.recentTaskItem = systray.AddMenuItem("Recent task: ", "task within 1 day")
-	a.startRecentTaskUpdater()
-
-	systray.AddSeparator()
-
 	// GoogleCalenderに登録するためのボタンの作成
-	allAdder := systray.AddMenuItem("Add every task to calendar", "ADD all")
+	allAdder := systray.AddMenuItem("Add every task to calendar", "update your google calendar")
+	/*
 	reportAdder := systray.AddMenuItem("Add report to calendar", "ADD report")
 	minitestAdder := systray.AddMenuItem("Add minitest to calendar", "ADD minitest")
 	classEnqAdder := systray.AddMenuItem("Add classenq to calendar", "ADD classenq")
-
-	systray.AddSeparator()
+	*/
 
 	// 最終同期
-	a.lastSyncItem = systray.AddMenuItem("Last sync: ", "lastSync")
+	a.lastSyncItem = systray.AddMenuItem("Last sync: ", "last updated at.")
 	systray.AddSeparator()
 
 	// quitボタンの作成
@@ -93,7 +94,7 @@ func (a *App) OnReady() {
 			} else {
 				a.Log.Println("登録する課題はありませんでした。")
 			}
-
+/*
 		case <-reportAdder.ClickedCh:
 			count, err := a.registReport()
 			if err != nil {
@@ -133,11 +134,13 @@ func (a *App) OnReady() {
 			} else {
 				a.Log.Println("登録する授業アンケートはありませんでした。")
 			}
-
+*/
 		case <-mQuit.ClickedCh:
 			a.Log.Println("タスクトレイアプリを終了します。")
 			systray.Quit()
 			return
+		
+		case <-recentTask.ClickedCh:
 		}
 	}
 }
@@ -283,8 +286,11 @@ func (a *App) autoAddSchedule() error { // 定期実行
 
 func (a *App) refreshMessage() {
 	cnt := strconv.Itoa(a.countUnSubmitted())
+	timeNow := time.Now().Format("2006-01-02 15:04:05")
 	a.unSubmittedItem.SetTitle("UnSubmitted task(s): " + cnt)
-	a.lastSyncItem.SetTitle("Last sync: " + time.Now().Format("2006-01-02 15:04:05"))
+	a.unSubmittedItem.SetTooltip("you have " + cnt + "task(s) to do.")
+	a.lastSyncItem.SetTitle("Last sync: " + timeNow)
+	a.lastSyncItem.SetTooltip("your google calendar was updated at " + timeNow)
 	systray.SetTitle("Gakujo-Clandar\n You have " + cnt + " task(s).")
 }
 
