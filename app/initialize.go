@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/earlgray283/gakujo-google-calendar/assets"
 	"github.com/skratchdot/open-golang/open"
 )
 
@@ -20,7 +21,7 @@ type AuthFormInfo struct {
 func GetAuthInfoFromBrowser(url string) (*AuthFormInfo, error) {
 	authFormInfo := AuthFormInfo{}
 
-	t, err := template.ParseFiles("template/auth.html")
+	t, err := template.ParseFS(assets.HtmlAuth, "html/auth.html")
 	if err != nil {
 		log.Fatalf("template error: %v", err)
 	}
