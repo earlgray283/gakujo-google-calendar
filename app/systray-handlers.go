@@ -30,8 +30,10 @@ func (a *App) OnReady() {
 	// 直近の課題
 	systray.AddMenuItem("直近の課題", "直近の課題")
 	a.recentTaskItem = systray.AddMenuItem("読み込んでいます...", "締切が最も近い課題です。")
+	a.recentTaskDeadLine = systray.AddMenuItem("読み込んでいます...", "締切りまでの時間です。")
 	a.startRecentTaskUpdater()
 
+	systray.AddSeparator()
 	// 未提出課題数
 	a.unSubmittedItem = systray.AddMenuItem("読み込んでいます...", "未提出の課題")
 
@@ -107,6 +109,7 @@ func (a *App) openWebSite(url string) error {
 
 func (a *App) startRecentTaskUpdater() {
 	s := gocron.NewScheduler(time.Local)
+	thistime := time.Now().UTC()
 
 	_, _ = s.Every(time.Hour).Do(func() {
 		now := time.Now()
@@ -132,7 +135,12 @@ func (a *App) startRecentTaskUpdater() {
 				newTitle, deadline = "["+minitest.CourseName+"]"+minitest.Title, minitest.EndDate
 			}
 		}
+
+		diff := deadline.Sub(thistime).Hours() - 10
+		untilDeadLine := strconv.FormatFloat(diff, 'f', 0, 64)
+		a.recentTaskDeadLine.SetTitle("締切りまであと" + untilDeadLine + "時間です。")
 		a.recentTaskItem.SetTitle(newTitle)
+
 		if deadline.Sub(now) < time.Hour*24 {
 			a.recentTaskItem.SetIcon(assets.IconAlert)
 		}
