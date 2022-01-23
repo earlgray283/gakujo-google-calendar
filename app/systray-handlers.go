@@ -29,7 +29,7 @@ func (a *App) OnReady() {
 	systray.SetTooltip("Set tasks to your google calendar automatically.")
 
 	// 直近の課題
-	recentTask := systray.AddMenuItem("Recent task: ","Recent task")
+	recentTask := systray.AddMenuItem("Recent task: ", "Recent task")
 	a.recentTaskItem = systray.AddMenuItem("Recent task: ", "task within 1 day")
 	a.startRecentTaskUpdater()
 
@@ -37,7 +37,7 @@ func (a *App) OnReady() {
 	a.unSubmittedItem = systray.AddMenuItem("UnSubmitted task(s): ", "your task(s) to do")
 
 	systray.AddSeparator()
-	
+
 	//GoogleCalendar, Gakujo を開く
 	calendarOpener := systray.AddMenuItem("Open Google Calendar in Web Site", "Open Google Calendar")
 	gakujoOpener := systray.AddMenuItem("Open Gakujo Portal Site", "Open Gakujo")
@@ -47,9 +47,9 @@ func (a *App) OnReady() {
 	// GoogleCalenderに登録するためのボタンの作成
 	allAdder := systray.AddMenuItem("Add every task to calendar", "update your google calendar")
 	/*
-	reportAdder := systray.AddMenuItem("Add report to calendar", "ADD report")
-	minitestAdder := systray.AddMenuItem("Add minitest to calendar", "ADD minitest")
-	classEnqAdder := systray.AddMenuItem("Add classenq to calendar", "ADD classenq")
+		reportAdder := systray.AddMenuItem("Add report to calendar", "ADD report")
+		minitestAdder := systray.AddMenuItem("Add minitest to calendar", "ADD minitest")
+		classEnqAdder := systray.AddMenuItem("Add classenq to calendar", "ADD classenq")
 	*/
 
 	// 最終同期
@@ -94,52 +94,52 @@ func (a *App) OnReady() {
 			} else {
 				a.Log.Println("登録する課題はありませんでした。")
 			}
-/*
-		case <-reportAdder.ClickedCh:
-			count, err := a.registReport()
-			if err != nil {
-				a.Log.Println(err)
-				a.Log.Println("タスクの登録に失敗しました")
-				systray.Quit()
-			}
-			if count != 0 {
-				a.Log.Println("レポート課題を登録しました。")
-			} else {
-				a.Log.Println("登録するレポート課題はありませんでした。")
-			}
+			/*
+				case <-reportAdder.ClickedCh:
+					count, err := a.registReport()
+					if err != nil {
+						a.Log.Println(err)
+						a.Log.Println("タスクの登録に失敗しました")
+						systray.Quit()
+					}
+					if count != 0 {
+						a.Log.Println("レポート課題を登録しました。")
+					} else {
+						a.Log.Println("登録するレポート課題はありませんでした。")
+					}
 
-		case <-minitestAdder.ClickedCh:
-			count, err := a.registMinitest()
-			if err != nil {
-				a.Log.Println(err)
-				a.Log.Println("タスクの登録に失敗しました")
-				systray.Quit()
-			}
-			if count != 0 {
-				a.Log.Println("小テスト課題を登録しました。")
-			} else {
-				a.Log.Println("登録する小テスト課題はありませんでした。")
-			}
+				case <-minitestAdder.ClickedCh:
+					count, err := a.registMinitest()
+					if err != nil {
+						a.Log.Println(err)
+						a.Log.Println("タスクの登録に失敗しました")
+						systray.Quit()
+					}
+					if count != 0 {
+						a.Log.Println("小テスト課題を登録しました。")
+					} else {
+						a.Log.Println("登録する小テスト課題はありませんでした。")
+					}
 
-		case <-classEnqAdder.ClickedCh:
-			count, err := a.registClassEnq()
-			if err != nil {
-				a.Log.Println(err)
-				a.Log.Println("タスクの登録に失敗しました")
-				systray.Quit()
-			}
+				case <-classEnqAdder.ClickedCh:
+					count, err := a.registClassEnq()
+					if err != nil {
+						a.Log.Println(err)
+						a.Log.Println("タスクの登録に失敗しました")
+						systray.Quit()
+					}
 
-			if count != 0 {
-				a.Log.Println("授業アンケートを登録しました。")
-			} else {
-				a.Log.Println("登録する授業アンケートはありませんでした。")
-			}
-*/
+					if count != 0 {
+						a.Log.Println("授業アンケートを登録しました。")
+					} else {
+						a.Log.Println("登録する授業アンケートはありませんでした。")
+					}
+			*/
 		case <-mQuit.ClickedCh:
 			a.Log.Println("タスクトレイアプリを終了します。")
 			systray.Quit()
 			return
-		
+
 		case <-recentTask.ClickedCh:
 		}
 	}
