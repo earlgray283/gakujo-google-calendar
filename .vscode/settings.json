@@ -12,5 +12,9 @@
       "source.organizeImports": true
     },
     "editor.suggest.snippetsPreventQuickSuggestions": false
-  }
+  },
+  "cSpell.words": [
+    "classenq",
+    "gakujo"
+  ]
 }

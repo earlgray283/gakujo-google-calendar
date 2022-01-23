@@ -13,7 +13,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-const formatAddedAt = "2006-01-02T15:04:05+09:00"
+const formatTimeForCalendarAPI = "2006-01-02T15:04:05+09:00"
 const Scope string = calendar.CalendarScope
 
 // コンソールにURLを表示して、コンソールにAuthCodeを貼り付けてやるやつ。テスト用。
@@ -133,17 +133,17 @@ func checkDoubleRegisted(eventTitle string, eventEnd *calendar.EventDateTime, sr
 
 // タイトルと日時を入れると Event 型を返す
 func NewGakujoEvent(title string, t time.Time) *calendar.Event {
-	added := time.Now().Format(formatAddedAt)
+	added := time.Now().Format("2006-01-02 15:04:05")
 	Event := &calendar.Event{
 		Summary:     title,
 		Location:    "学務情報システム",
 		Description: "学情カレンダーから追加された予定です。\n学務情報システム: https://gakujo.shizuoka.ac.jp/portal/\nAdded: " + added,
 		Start: &calendar.EventDateTime{
-			DateTime: t.Add(-time.Hour).Format(formatAddedAt),
+			DateTime: t.Add(-time.Hour).Format(formatTimeForCalendarAPI),
 			TimeZone: "Asia/Tokyo",
 		},
 		End: &calendar.EventDateTime{
-			DateTime: t.Format(formatAddedAt),
+			DateTime: t.Format(formatTimeForCalendarAPI),
 			TimeZone: "Asia/Tokyo",
 		},
 	}
