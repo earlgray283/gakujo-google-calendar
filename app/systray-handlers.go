@@ -3,7 +3,6 @@ package app
 // systray 周り
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -166,21 +165,21 @@ func (a *App) startRecentTaskUpdater() {
 		newTitle, deadline := "", now.AddDate(1, 0, 0)
 		classenq := a.crawler.Classenq.GetMinByTime()
 		if classenq != nil {
-			fmt.Println(classenq.Title)
+			a.Log.Println(classenq.Title)
 			if deadline.After(classenq.EndDate) {
 				newTitle, deadline = "["+classenq.CourseName+"]"+classenq.Title, classenq.EndDate
 			}
 		}
 		report := a.crawler.Report.GetMinByTime()
 		if report != nil {
-			fmt.Println(report.Title)
+			a.Log.Println(report.Title)
 			if deadline.After(report.EndDate) {
 				newTitle, deadline = "["+report.CourseName+"]"+report.Title, report.EndDate
 			}
 		}
 		minitest := a.crawler.Minitest.GetMinByTime()
 		if minitest != nil {
-			fmt.Println(minitest.Title)
+			a.Log.Println(minitest.Title)
 			if deadline.After(minitest.EndDate) {
 				newTitle, deadline = "["+minitest.CourseName+"]"+minitest.Title, minitest.EndDate
 			}
