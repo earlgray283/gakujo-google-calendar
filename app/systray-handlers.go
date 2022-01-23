@@ -3,7 +3,6 @@ package app
 // systray 周り
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -113,26 +112,32 @@ func (a *App) startRecentTaskUpdater() {
 		now := time.Now()
 		newTitle, deadline := "", now.AddDate(1, 0, 0)
 		classenq := a.crawler.Classenq.GetMinByTime()
-		fmt.Println(classenq.Title)
-		if deadline.After(classenq.EndDate) {
-			newTitle, deadline = "["+classenq.CourseName+"]"+classenq.Title, classenq.EndDate
+		if classenq != nil {
+			a.Log.Println(classenq.Title)
+			if deadline.After(classenq.EndDate) {
+				newTitle, deadline = "["+classenq.CourseName+"]"+classenq.Title, classenq.EndDate
+			}
 		}
 		report := a.crawler.Report.GetMinByTime()
-		fmt.Println(report.Title)
-		if deadline.After(report.EndDate) {
-			newTitle, deadline = "["+report.CourseName+"]"+report.Title, report.EndDate
+		if report != nil {
+			a.Log.Println(report.Title)
+			if deadline.After(report.EndDate) {
+				newTitle, deadline = "["+report.CourseName+"]"+report.Title, report.EndDate
+			}
 		}
 		minitest := a.crawler.Minitest.GetMinByTime()
-		fmt.Println(minitest.Title)
-		if deadline.After(minitest.EndDate) {
-			newTitle, deadline = "["+minitest.CourseName+"]"+minitest.Title, minitest.EndDate
+		if minitest != nil {
+			a.Log.Println(minitest.Title)
+			if deadline.After(minitest.EndDate) {
+				newTitle, deadline = "["+minitest.CourseName+"]"+minitest.Title, minitest.EndDate
+			}
 		}
 		a.recentTaskItem.SetTitle(newTitle)
 		if deadline.Sub(now) < time.Hour*24 {
 			a.recentTaskItem.SetIcon(assets.IconAlert)
-		} else {
-			a.recentTaskItem.SetIcon(nil)
 		}
+
+		// TODO: hide icon
 	})
 
 	s.StartAsync()
