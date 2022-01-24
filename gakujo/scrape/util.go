@@ -13,7 +13,8 @@ func replaceAndTrim(s string) string {
 
 //	a wrapper of time.Parse() which supports 24:00 format
 func parse2400(layout, value string) (time.Time, error) {
-	parsedTime, err := time.Parse(layout, value)
+	tz, _ := time.LoadLocation("Asia/Tokyo")
+	parsedTime, err := time.ParseInLocation(layout, value, tz)
 	if err != nil {
 		if !isHourOutErr(err) {
 			return time.Time{}, err
@@ -23,7 +24,7 @@ func parse2400(layout, value string) (time.Time, error) {
 			return time.Time{}, errors.New("stdHour 15 was not found in layout")
 		}
 		newValue := value[:i] + "00" + value[i+2:]
-		parsedTime, err = time.Parse(layout, newValue)
+		parsedTime, err = time.ParseInLocation(layout, newValue, tz)
 		if err != nil {
 			return time.Time{}, err
 		}

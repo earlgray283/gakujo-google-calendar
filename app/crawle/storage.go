@@ -53,7 +53,7 @@ func (s *MinitestStorage) GetMinByTime() *model.MinitestRow {
 		if now.After(row.EndDate) {
 			continue
 		}
-		if min.EndDate.After(row.EndDate) && min.SubmitStatus == model.UnSubmited {
+		if min.EndDate.After(row.EndDate) && row.SubmitStatus == model.UnSubmited {
 			min = row
 		}
 	}
@@ -89,7 +89,7 @@ func (s *ReportStorage) GetMinByTime() *model.ReportRow {
 			continue
 		}
 		emptyTime := time.Time{}
-		if min.EndDate.After(row.EndDate) && min.LastSubmitDate.String() == emptyTime.String() {
+		if min.EndDate.After(row.EndDate) && row.LastSubmitDate.String() == emptyTime.String() {
 			min = row
 		}
 	}
@@ -124,7 +124,7 @@ func (s *ClassEnqStorage) GetMinByTime() *model.ClassEnqRow {
 		if now.After(row.EndDate) {
 			continue
 		}
-		if min.EndDate.After(row.EndDate) && min.SubmitStatus == model.UnSubmited {
+		if min.EndDate.After(row.EndDate) && row.SubmitStatus == model.UnSubmited {
 			min = row
 		}
 	}
