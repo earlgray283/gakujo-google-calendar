@@ -140,7 +140,7 @@ func (a *App) startRecentTaskUpdater() {
 			subTime := deadline.Sub(now)
 			h := int(subTime.Hours())
 			m := int(subTime.Minutes())
-			return fmt.Sprintf("%v時間%v分", h, m - (h * 60))
+			return fmt.Sprintf("%v時間%v分", h, m%60)
 		}()))
 
 		a.recentTaskItem.SetTitle(newTitle)
