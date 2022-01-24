@@ -3,6 +3,7 @@ package app
 // systray 周り
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -136,9 +137,7 @@ func (a *App) startRecentTaskUpdater() {
 			}
 		}
 
-		diff := deadline.Sub(thistime).Hours() - 10
-		untilDeadLine := strconv.FormatFloat(diff, 'f', 0, 64)
-		a.recentTaskDeadLine.SetTitle("締切りまであと" + untilDeadLine + "時間です。")
+		a.recentTaskDeadLine.SetTitle(fmt.Sprintf("締切りまであと%v時間です。", int(deadline.Sub(thistime).Hours())))
 		a.recentTaskItem.SetTitle(newTitle)
 
 		if deadline.Sub(now) < time.Hour*24 {
