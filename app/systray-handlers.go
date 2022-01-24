@@ -3,6 +3,7 @@ package app
 // systray 周り
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -109,9 +110,8 @@ func (a *App) openWebSite(url string) error {
 
 func (a *App) startRecentTaskUpdater() {
 	s := gocron.NewScheduler(time.Local)
-	thistime := time.Now().UTC()
 
-	_, _ = s.Every(time.Hour).Do(func() {
+	_, _ = s.Every(time.Minute).Do(func() {
 		now := time.Now()
 		newTitle, deadline := "", now.AddDate(1, 0, 0)
 		classenq := a.crawler.Classenq.GetMinByTime()
@@ -136,11 +136,14 @@ func (a *App) startRecentTaskUpdater() {
 			}
 		}
 
-		diff := deadline.Sub(thistime).Hours() - 10
-		untilDeadLine := strconv.FormatFloat(diff, 'f', 0, 64)
-		a.recentTaskDeadLine.SetTitle("締切りまであと" + untilDeadLine + "時間です。")
-		a.recentTaskItem.SetTitle(newTitle)
+		a.recentTaskDeadLine.SetTitle(fmt.Sprintf("締切まであと %s です。", func() string {
+			subTime := deadline.Sub(now)
+			h := int(subTime.Hours())
+			m := int(subTime.Minutes())
+			return fmt.Sprintf("%v時間%v分", h, m%60)
+		}()))
 
+		a.recentTaskItem.SetTitle(newTitle)
 		if deadline.Sub(now) < time.Hour*24 {
 			a.recentTaskItem.SetIcon(assets.IconAlert)
 		}
