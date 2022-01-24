@@ -111,7 +111,7 @@ func (a *App) openWebSite(url string) error {
 func (a *App) startRecentTaskUpdater() {
 	s := gocron.NewScheduler(time.Local)
 
-	_, _ = s.Every(time.Hour).Do(func() {
+	_, _ = s.Every(time.Minute).Do(func() {
 		now := time.Now()
 		newTitle, deadline := "", now.AddDate(1, 0, 0)
 		classenq := a.crawler.Classenq.GetMinByTime()
@@ -136,13 +136,11 @@ func (a *App) startRecentTaskUpdater() {
 			}
 		}
 
-		a.recentTaskDeadLine.SetTitle(fmt.Sprintf("締切まであと%sです。", func() string {
+		a.recentTaskDeadLine.SetTitle(fmt.Sprintf("締切まであと %s です。", func() string {
 			subTime := deadline.Sub(now)
-			if subTime.Hours() < 1.0 {
-				return fmt.Sprintf("%v分", int(subTime.Minutes()))
-			} else {
-				return fmt.Sprintf("%.1f時間", subTime.Hours())
-			}
+			h := int(subTime.Hours())
+			m := int(subTime.Minutes())
+			return fmt.Sprintf("%v時間%v分", h, m - (h * 60))
 		}()))
 
 		a.recentTaskItem.SetTitle(newTitle)
