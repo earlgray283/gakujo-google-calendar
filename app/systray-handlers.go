@@ -142,8 +142,12 @@ func (a *App) startRecentTaskUpdaterAsync() {
 		a.recentTaskItem.SetTitle(newTitle)
 		if deadline.Sub(now) < time.Hour*24 {
 			a.recentTaskItem.SetIcon(assets.IconAlert)
+			systray.SetTooltip("Gakujo-Google-Calendar 24時間以内に締め切りの課題があります")
+			systray.SetIcon(assets.IconGakujoAlert)
 		} else {
 			a.recentTaskItem.SetIcon(assets.IconTask)
+			systray.SetTooltip("Gakujo-Google-Calendar")
+			systray.SetIcon(assets.IconGakujo)
 		}
 	})
 
