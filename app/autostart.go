@@ -29,12 +29,10 @@ func (a *AutoStarter) StartAsync() chan error {
 	errC := make(chan error)
 	go func() {
 		for {
-			select {
-			case <-a.item.ClickedCh:
-				if err2 := a.handle(); err2 != nil {
-					errC <- err2
-					return
-				}
+			<-a.item.ClickedCh
+			if err2 := a.handle(); err2 != nil {
+				errC <- err2
+				return
 			}
 		}
 	}()
