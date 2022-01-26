@@ -1,0 +1,24 @@
+FROM --platform=linux/amd64 ubuntu:21.04
+
+RUN apt-get update \
+    && apt-get install -y tzdata \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+ENV TZ Asia/Tokyo
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gcc \
+        libgtk-3-dev \
+        libappindicator3-dev \
+        curl \
+        ca-certificates \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN \
+    curl -OL https://go.dev/dl/go1.17.6.linux-amd64.tar.gz \
+    && tar -C /usr/local -xzf go1.17.6.linux-amd64.tar.gz \
+    && rm go1.17.6.linux-amd64.tar.gz
+
+ENV PATH /usr/local/go/bin:$PATH
+
+WORKDIR /work
