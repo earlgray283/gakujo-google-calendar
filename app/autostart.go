@@ -52,6 +52,7 @@ func (a *AutoStarter) setTitle() {
 }
 
 func (a *AutoStarter) handle() error {
+	defer a.setTitle()
 	if a.app.IsEnabled() {
 		return a.app.Disable()
 	} else {
