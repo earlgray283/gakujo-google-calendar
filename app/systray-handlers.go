@@ -23,40 +23,27 @@ const gakujoURL = "https://gakujo.shizuoka.ac.jp/portal/"
 func (a *App) OnReady() {
 	a.Log.SetOutput(os.Stdout)
 	a.crawler.Log.SetOutput(os.Stdout)
-	//タスクトレイ大元の設定
+
 	systray.SetIcon(assets.IconGakujo)
 	systray.SetTitle("")
 	systray.SetTooltip("Gakujo-Google-Calendar")
 
-	// 直近の課題
-	systray.AddMenuItem("直近の課題", "直近の課題")
+	// 表示周り
 	a.recentTaskItem = systray.AddMenuItem("読み込んでいます...", "締切が最も近い課題です。")
-	a.recentTaskDeadLine = systray.AddMenuItem("読み込んでいます...", "締切りまでの時間です。")
-	a.startRecentTaskUpdater()
-
+	a.recentTaskDeadLine = systray.AddMenuItem("読み込んでいます...", "締切までの時間です。")
 	systray.AddSeparator()
-	// 未提出課題数
 	a.unSubmittedItem = systray.AddMenuItem("読み込んでいます...", "未提出の課題")
-
 	systray.AddSeparator()
-
-	//GoogleCalendar, Gakujo を開く
 	calendarOpener := systray.AddMenuItem("Googleカレンダーを開く", "Googleカレンダーを開く")
 	gakujoOpener := systray.AddMenuItem("学情を開く", "学情を開く")
-
 	systray.AddSeparator()
-
-	// GoogleCalenderに登録するためのボタンの作成
 	allAdder := systray.AddMenuItem("Googleカレンダーに課題を追加する", "Googleカレンダーに課題を追加する")
-
-	// 最終同期
 	a.lastSyncItem = systray.AddMenuItem("最初の更新をしています...", "最終同期")
 	systray.AddSeparator()
-
-	// quitボタンの作成
 	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
 
-	// 定期実行する
+	// スケジューラ
+	a.startRecentTaskUpdater()
 	if err := a.autoAddSchedule(); err != nil {
 		a.Log.Println(err)
 		a.Log.Println("定期実行に失敗しました")
@@ -91,6 +78,7 @@ func (a *App) OnReady() {
 			} else {
 				a.Log.Println("登録する課題はありませんでした。")
 			}
+
 		case <-mQuit.ClickedCh:
 			a.Log.Println("タスクトレイアプリを終了します。")
 			systray.Quit()
@@ -231,7 +219,7 @@ func (a *App) registAll() (int, error) {
 	return cntSum, nil
 }
 
-func (a *App) autoAddSchedule() error { // 定期実行
+func (a *App) autoAddSchedule() error {
 	s := gocron.NewScheduler(time.Local)
 
 	_, _ = s.Every(30).Minutes().Do(func() {
