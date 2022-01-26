@@ -145,10 +145,10 @@ func (a *App) startRecentTaskUpdater() {
 
 		a.recentTaskItem.SetTitle(newTitle)
 		if deadline.Sub(now) < time.Hour*24 {
-			a.recentTaskItem.SetIcon(assets.IconAlert)
+			a.recentTaskItem.SetIcon(assets.IconTask)
+		} else {
+			a.recentTaskItem.SetIcon(assets.IconTask)
 		}
-
-		// TODO: hide icon
 	})
 
 	s.StartAsync()

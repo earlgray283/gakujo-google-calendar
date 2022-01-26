@@ -9,3 +9,6 @@ var IconAlert []byte
 
 //go:embed icon/gakujo.ico
 var IconGakujo []byte
+
+//go:embed icon/task.ico
+var IconTask []byte
