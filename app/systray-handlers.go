@@ -1,7 +1,5 @@
 package app
 
-// systray 周り
-
 import (
 	"fmt"
 	"os"
@@ -10,15 +8,19 @@ import (
 
 	calendar "github.com/earlgray283/gakujo-google-calendar/app/google-calendar-api"
 	"github.com/earlgray283/gakujo-google-calendar/assets"
+	"github.com/earlgray283/gakujo-google-calendar/gakujo/model"
 	"github.com/getlantern/systray"
 	"github.com/go-co-op/gocron"
 	"github.com/skratchdot/open-golang/open"
 )
 
-const dateTimeNotSubmitted = "0001-01-01 00:00:00 +0000 UTC" //未提出の課題を選別するためのconst
+//未提出の課題を選別するためのconst
+const dateTimeNotSubmitted = "0001-01-01 00:00:00 +0000 UTC"
 
-const googleCalendarURL = "https://calendar.google.com/calendar/" //GoogleCalendarのURL(string参照)
-const gakujoURL = "https://gakujo.shizuoka.ac.jp/portal/"
+const (
+	googleCalendarURL = "https://calendar.google.com/calendar/"
+	gakujoURL         = "https://gakujo.shizuoka.ac.jp/portal/"
+)
 
 func (a *App) OnReady() {
 	a.Log.SetOutput(os.Stdout)
@@ -38,39 +40,38 @@ func (a *App) OnReady() {
 	gakujoOpener := systray.AddMenuItem("学情を開く", "学情を開く")
 	systray.AddSeparator()
 	allAdder := systray.AddMenuItem("Googleカレンダーに課題を追加する", "Googleカレンダーに課題を追加する")
+	autoStarter := NewAutoStartApp()
 	a.lastSyncItem = systray.AddMenuItem("最初の更新をしています...", "最終同期")
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
 
 	// スケジューラ
-	a.startRecentTaskUpdater()
-	if err := a.autoAddSchedule(); err != nil {
-		a.Log.Println(err)
-		a.Log.Println("定期実行に失敗しました")
-		systray.Quit()
-	}
+	autoStarterErrC := autoStarter.StartAsync()
+	a.startRecentTaskUpdaterAsync()
+	registerErrC := a.startRegisterAsync()
 
 	for {
 		select {
 		case <-calendarOpener.ClickedCh:
+			a.Log.Println("Google Calendarを開きます。")
 			if err := a.openWebSite(googleCalendarURL); err != nil {
 				a.Log.Println(err)
 				systray.Quit()
 			}
-			a.Log.Println("Google Calendarを開きます。")
 
 		case <-gakujoOpener.ClickedCh:
+			a.Log.Println("学情ポータルサイトを開きます。")
 			if err := a.openWebSite(gakujoURL); err != nil {
 				a.Log.Println(err)
 				systray.Quit()
 			}
-			a.Log.Println("学情ポータルサイトを開きます。")
 
 		case <-allAdder.ClickedCh:
+			fmt.Println("タスクの登録をします。")
 			count, err := a.registAll()
 			if err != nil {
-				a.Log.Println(err)
 				a.Log.Println("タスクの登録に失敗しました")
+				a.Log.Println(err)
 				systray.Quit()
 			}
 			if count != 0 {
@@ -82,7 +83,14 @@ func (a *App) OnReady() {
 		case <-mQuit.ClickedCh:
 			a.Log.Println("タスクトレイアプリを終了します。")
 			systray.Quit()
-			return
+
+		case err := <-autoStarterErrC:
+			a.Log.Println(err)
+			systray.Quit()
+
+		case err := <-registerErrC:
+			a.Log.Println(err)
+			systray.Quit()
 		}
 	}
 }
@@ -96,7 +104,7 @@ func (a *App) openWebSite(url string) error {
 	return open.Run(url)
 }
 
-func (a *App) startRecentTaskUpdater() {
+func (a *App) startRecentTaskUpdaterAsync() {
 	s := gocron.NewScheduler(time.Local)
 
 	_, _ = s.Every(time.Minute).Do(func() {
@@ -144,53 +152,59 @@ func (a *App) startRecentTaskUpdater() {
 
 func (a *App) registReport() (int, error) {
 	reportRows, _ := a.crawler.Report.Get()
-	counter := 0
+	now := time.Now()
+	count := 0
 	for _, row := range reportRows {
-		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-		if row.EndDate.After(time.Now()) {
-			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
-				if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
-					return -1, err
-				}
-				counter += 1
+		if row.EndDate.Before(now) {
+			continue
+		}
+		if row.LastSubmitDate.String() == dateTimeNotSubmitted {
+			event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
+			if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
+				return -1, err
 			}
+			count++
 		}
 	}
-	return counter, nil
+	return count, nil
 }
 
 func (a *App) registMinitest() (int, error) {
-	counter := 0
+	count := 0
+	now := time.Now()
 	minitestRows, _ := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
-		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) {
-				if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
-					return -1, err
-				}
-				counter += 1
+		if row.EndDate.Before(now) {
+			continue
+		}
+		if row.SubmitStatus != model.UnSubmited {
+			event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
+			if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
+				return -1, err
 			}
+			count++
 		}
 	}
-	return counter, nil
+	return count, nil
 }
 
 func (a *App) registClassEnq() (int, error) {
-	counter := 0
+	count := 0
 	classEnqRows, _ := a.crawler.Classenq.Get()
+	now := time.Now()
 	for _, row := range classEnqRows {
-		event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
-		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) {
-				if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
-					return -1, nil
-				}
-				counter += 1
+		if row.EndDate.Before(now) {
+			continue
+		}
+		if row.SubmitStatus == model.UnSubmited {
+			event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
+			if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
+				return -1, nil
 			}
+			count++
 		}
 	}
-	return counter, nil
+	return count, nil
 }
 
 func (a *App) registAll() (int, error) {
@@ -201,31 +215,28 @@ func (a *App) registAll() (int, error) {
 		return 0, err
 	}
 	cntSum += ReportCounter
-
 	MinitestCounter, err := a.registMinitest()
 	if err != nil {
 		return 0, err
 	}
 	cntSum += MinitestCounter
-
 	ClassEnqCounter, err := a.registClassEnq()
 	if err != nil {
 		return 0, err
 	}
 	cntSum += ClassEnqCounter
 
-	a.updateItems()
-
 	return cntSum, nil
 }
 
-func (a *App) autoAddSchedule() error {
+func (a *App) startRegisterAsync() chan error {
 	s := gocron.NewScheduler(time.Local)
+	errC := make(chan error)
 
 	_, _ = s.Every(30).Minutes().Do(func() {
 		counter, err := a.registAll()
 		if err != nil {
-			systray.Quit()
+			errC <- err
 		}
 
 		if counter != 0 {
@@ -233,6 +244,8 @@ func (a *App) autoAddSchedule() error {
 		} else {
 			a.Log.Println("登録する予定はありませんでした。")
 		}
+
+		a.updateItems()
 	})
 	s.StartAsync()
 	return nil
