@@ -151,12 +151,7 @@ func (a *App) updateRecentTask() {
 			subTime := deadline.Sub(now)
 			h := int(subTime.Hours())
 			m := int(subTime.Minutes())
-			if h/24 >= 2 {
-				return fmt.Sprintf("%v日", h/24)
-			} else {
-				return fmt.Sprintf("%v時間 %v分", h, m%60)
-			}
-
+			return fmt.Sprintf("%v時間 %v分", h, m%60)
 		}()))
 		a.recentTaskItem.SetTitle(newTitle)
 	}
