@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 
@@ -23,9 +22,6 @@ const (
 )
 
 func (a *App) OnReady() {
-	a.Log.SetOutput(os.Stdout)
-	a.crawler.Log.SetOutput(os.Stdout)
-
 	systray.SetIcon(assets.IconGakujo)
 	systray.SetTitle("")
 	systray.SetTooltip("Gakujo-Google-Calendar")
