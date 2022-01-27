@@ -38,8 +38,12 @@ func (a *App) OnReady() {
 	systray.AddSeparator()
 	autoStarter := NewAutoStartApp()
 	systray.AddSeparator()
-	a.syncButtonItem = systray.AddMenuItem("Googleカレンダーに課題を追加する", "Googleカレンダーに課題を追加する")
-	a.lastSyncItem = systray.AddMenuItem("最初の更新をしています...", "最終同期")
+
+	a.syncButtonItem = systray.AddMenuItem("最初の更新をしています...", "Googleカレンダーに課題を追加する")
+	a.lastSyncItem = systray.AddMenuItem("最終更新: ", "最終同期")
+	a.lastSyncItem.Hide()
+	a.syncButtonItem.Disable()
+
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
 
@@ -287,10 +291,6 @@ func (a *App) updateAll() (int, error) {
 
 	a.updateRecentTask()
 
-	a.syncButtonItem.SetTitle("今すぐ更新する")
-	a.lastSyncItem.Enable()
-	a.syncButtonItem.Enable()
-
 	return count, nil
 }
 
@@ -299,7 +299,7 @@ func (a *App) startRegisterAsync() chan error {
 	errC := make(chan error)
 
 	_, _ = s.Every(180).Minutes().Do(func() {
-		counter, err := a.updateAll()
+		counter, err := a.registAll()
 		if err != nil {
 			errC <- err
 		}
@@ -309,7 +309,7 @@ func (a *App) startRegisterAsync() chan error {
 		} else {
 			a.Log.Println("登録する予定はありませんでした。")
 		}
-
+		
 		a.updateItems()
 	})
 	s.StartAsync()
@@ -317,12 +317,17 @@ func (a *App) startRegisterAsync() chan error {
 }
 
 func (a *App) updateItems() {
+	a.lastSyncItem.Show()
+	a.syncButtonItem.Show()
+	a.lastSyncItem.Enable()
+	a.syncButtonItem.Enable()
 	cnt := strconv.Itoa(a.countUnSubmitted())
 	timeNow := time.Now().Format("2006-01-02 15:04:05")
 	a.unSubmittedItem.SetTitle("未提出の課題が " + cnt + " 件あります。")
 	a.unSubmittedItem.SetTooltip("未提出の課題が " + cnt + " 件あります。")
 	a.lastSyncItem.SetTitle("最終更新: " + timeNow)
 	a.lastSyncItem.SetTooltip("最終更新: " + timeNow)
+	a.syncButtonItem.SetTitle("今すぐ更新する")
 }
 
 func (a *App) countUnSubmitted() int {
