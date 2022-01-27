@@ -69,7 +69,7 @@ func (a *App) OnReady() {
 			}
 
 		case <-a.syncButtonItem.ClickedCh:
-			fmt.Println("タスクの登録をします。")
+			a.Log.Println("タスクの登録をします。")
 			count, err := a.updateAll()
 			if err != nil {
 				a.Log.Println("タスクの登録に失敗しました")
