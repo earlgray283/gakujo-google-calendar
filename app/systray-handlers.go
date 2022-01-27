@@ -309,7 +309,7 @@ func (a *App) startRegisterAsync() chan error {
 		} else {
 			a.Log.Println("登録する予定はありませんでした。")
 		}
-		
+
 		a.updateItems()
 	})
 	s.StartAsync()
