@@ -66,7 +66,7 @@ func (a *App) OnReady() {
 
 		case <-a.syncButtonItem.ClickedCh:
 			fmt.Println("タスクの登録をします。")
-			count, err := a.registAll()
+			count, err := a.updateAll()
 			if err != nil {
 				a.Log.Println("タスクの登録に失敗しました")
 				a.Log.Println(err)
@@ -106,13 +106,13 @@ func (a *App) startRecentTaskUpdaterAsync() {
 	s := gocron.NewScheduler(time.Local)
 
 	_, _ = s.Every(time.Minute).Do(func() {
-		a.recentTaskUpdate()
+		a.updateRecentTask()
 	})
 
 	s.StartAsync()
 }
 
-func (a *App) recentTaskUpdate() {
+func (a *App) updateRecentTask() {
 	now := time.Now()
 	newTitle, deadline := "", now.AddDate(1, 0, 0)
 	classenq := a.crawler.Classenq.GetMinByTime()
@@ -147,7 +147,12 @@ func (a *App) recentTaskUpdate() {
 			subTime := deadline.Sub(now)
 			h := int(subTime.Hours())
 			m := int(subTime.Minutes())
-			return fmt.Sprintf("%v時間%v分", h, m%60)
+			if h/24 >= 2 {
+				return fmt.Sprintf("%v日", h/24)
+			} else {
+				return fmt.Sprintf("%v時間 %v分", h, m%60)
+			}
+
 		}()))
 		a.recentTaskItem.SetTitle(newTitle)
 	}
@@ -223,27 +228,6 @@ func (a *App) registClassEnq() (int, error) {
 func (a *App) registAll() (int, error) {
 	cntSum := 0
 
-	a.syncButtonItem.Disable()
-	a.lastSyncItem.Disable()
-	a.syncButtonItem.SetTitle("更新しています...")
-	a.lastSyncItem.SetTitle("更新しています...")
-
-	retryCount := 5
-	err := a.crawler.CrawleReportRows(retryCount)
-	if err != nil {
-		return 0, err
-	}
-
-	err = a.crawler.CrawleMinitestRows(retryCount)
-	if err != nil {
-		return 0, err
-	}
-
-	err = a.crawler.CrawleClassEnqRows(retryCount)
-	if err != nil {
-		return 0, err
-	}
-
 	ReportCounter, err := a.registReport()
 	if err != nil {
 		return 0, err
@@ -260,14 +244,54 @@ func (a *App) registAll() (int, error) {
 	}
 	cntSum += ClassEnqCounter
 
+	return cntSum, nil
+}
+
+func (a *App) crawlAll() error {
+	retryCount := 5
+	err := a.crawler.CrawleReportRows(retryCount)
+	if err != nil {
+		return err
+	}
+
+	err = a.crawler.CrawleMinitestRows(retryCount)
+	if err != nil {
+		return err
+	}
+
+	err = a.crawler.CrawleClassEnqRows(retryCount)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *App) updateAll() (int, error) {
+	a.syncButtonItem.Disable()
+	a.lastSyncItem.Disable()
+	a.syncButtonItem.SetTitle("更新しています...")
+
+	a.lastSyncItem.SetTitle("学情からデータを取得しています")
+	err := a.crawlAll()
+	if err != nil {
+		return 0, err
+	}
+
+	a.lastSyncItem.SetTitle("Googleカレンダーに登録しています")
+	count, err := a.registAll()
+	if err != nil {
+		return 0, err
+	}
+
 	a.updateItems()
-	a.recentTaskUpdate()
+
+	a.updateRecentTask()
 
 	a.syncButtonItem.SetTitle("今すぐ更新する")
 	a.lastSyncItem.Enable()
 	a.syncButtonItem.Enable()
 
-	return cntSum, nil
+	return count, nil
 }
 
 func (a *App) startRegisterAsync() chan error {
@@ -275,7 +299,7 @@ func (a *App) startRegisterAsync() chan error {
 	errC := make(chan error)
 
 	_, _ = s.Every(180).Minutes().Do(func() {
-		counter, err := a.registAll()
+		counter, err := a.updateAll()
 		if err != nil {
 			errC <- err
 		}
