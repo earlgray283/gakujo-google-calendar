@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/earlgray283/gakujo-google-calendar/app/crawle"
 	mycalendar "github.com/earlgray283/gakujo-google-calendar/app/google-calendar-api"
@@ -30,14 +29,14 @@ type App struct {
 }
 
 func NewApp(crawler *crawle.Crawler, srv *calendar.Service) (*App, error) {
-	appLogPath := filepath.Join(util.DefaultConfigDir(), time.Now().Format(FmtAppLogFile))
+	appLogPath := filepath.Join(util.DefaultCacheDir(), FmtAppLogFile)
 	appFile, err := os.Create(appLogPath)
 	if err != nil {
 		return nil, err
 	}
 	logger := log.New(appFile, "", log.LstdFlags)
 
-	crawlerLogPath := filepath.Join(util.DefaultConfigDir(), time.Now().Format(FmtCrawlerLogFile))
+	crawlerLogPath := filepath.Join(util.DefaultCacheDir(), FmtCrawlerLogFile)
 	crawlerFile, err := os.Create(crawlerLogPath)
 	if err != nil {
 		return nil, err

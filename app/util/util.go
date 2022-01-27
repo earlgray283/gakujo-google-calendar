@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func DefaultConfigDir() string {
@@ -22,7 +23,7 @@ func ExistsFile(path string) bool {
 
 func DefaultCacheDir() string {
 	uCacheDirPath, _ := os.UserCacheDir()
-	cacheDirPath := filepath.Join(uCacheDirPath, "gakujo-google-calendar")
+	cacheDirPath := filepath.Join(uCacheDirPath, "gakujo-google-calendar", time.Now().Format("2006_01_02_15_04_05"))
 	if err := os.MkdirAll(cacheDirPath, 0755); err != nil {
 		panic(err)
 	}
