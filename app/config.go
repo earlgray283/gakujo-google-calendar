@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	FmtCrawlerLogFile = "crawler_log_2006_01_02_15_04_05.txt"
-	FmtAppLogFile     = "app_log_2006_01_02_15_04_05.txt"
+	FmtCrawlerLogFile = "crawler_log.txt"
+	FmtAppLogFile     = "app_log.txt"
 )
 
 type Config struct {
