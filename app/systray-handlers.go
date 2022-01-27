@@ -274,7 +274,7 @@ func (a *App) startRegisterAsync() chan error {
 	s := gocron.NewScheduler(time.Local)
 	errC := make(chan error)
 
-	_, _ = s.Every(30).Minutes().Do(func() {
+	_, _ = s.Every(180).Minutes().Do(func() {
 		counter, err := a.registAll()
 		if err != nil {
 			errC <- err
