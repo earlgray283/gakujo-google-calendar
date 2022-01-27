@@ -37,11 +37,12 @@ func (a *App) OnReady() {
 	a.unSubmittedItem = systray.AddMenuItem("読み込んでいます...", "未提出の課題")
 	systray.AddSeparator()
 	calendarOpener := systray.AddMenuItem("Googleカレンダーを開く", "Googleカレンダーを開く")
+
 	gakujoOpener := systray.AddMenuItem("学情を開く", "学情を開く")
 	systray.AddSeparator()
 	autoStarter := NewAutoStartApp()
 	systray.AddSeparator()
-	allAdder := systray.AddMenuItem("Googleカレンダーに課題を追加する", "Googleカレンダーに課題を追加する")
+	a.syncButtonItem = systray.AddMenuItem("Googleカレンダーに課題を追加する", "Googleカレンダーに課題を追加する")
 	a.lastSyncItem = systray.AddMenuItem("最初の更新をしています...", "最終同期")
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
@@ -67,7 +68,7 @@ func (a *App) OnReady() {
 				systray.Quit()
 			}
 
-		case <-allAdder.ClickedCh:
+		case <-a.syncButtonItem.ClickedCh:
 			fmt.Println("タスクの登録をします。")
 			count, err := a.registAll()
 			if err != nil {
@@ -215,6 +216,11 @@ func (a *App) registClassEnq() (int, error) {
 func (a *App) registAll() (int, error) {
 	cntSum := 0
 
+	a.syncButtonItem.Disable()
+	a.lastSyncItem.Disable()
+	a.syncButtonItem.SetTitle("更新しています...")
+	a.lastSyncItem.SetTitle("更新しています...")
+
 	ReportCounter, err := a.registReport()
 	if err != nil {
 		return 0, err
@@ -230,6 +236,11 @@ func (a *App) registAll() (int, error) {
 		return 0, err
 	}
 	cntSum += ClassEnqCounter
+
+	a.updateItems()
+	a.syncButtonItem.SetTitle("今すぐ更新する")
+	a.lastSyncItem.Enable()
+	a.syncButtonItem.Enable()
 
 	return cntSum, nil
 }

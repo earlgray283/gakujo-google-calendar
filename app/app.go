@@ -25,6 +25,7 @@ type App struct {
 	recentTaskDeadLine *systray.MenuItem
 	lastSyncItem       *systray.MenuItem
 	unSubmittedItem    *systray.MenuItem
+	syncButtonItem     *systray.MenuItem
 
 	calendarId string
 }
