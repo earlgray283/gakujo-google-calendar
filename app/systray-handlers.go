@@ -45,8 +45,8 @@ func (a *App) OnReady() {
 
 	// スケジューラ
 	autoStarterErrC := autoStarter.StartAsync()
-	a.startRecentTaskUpdaterAsync()
 	registerErrC := a.startRegisterAsync()
+	a.startRecentTaskUpdaterAsync()
 
 	for {
 		select {
@@ -106,50 +106,61 @@ func (a *App) startRecentTaskUpdaterAsync() {
 	s := gocron.NewScheduler(time.Local)
 
 	_, _ = s.Every(time.Minute).Do(func() {
-		now := time.Now()
-		newTitle, deadline := "", now.AddDate(1, 0, 0)
-		classenq := a.crawler.Classenq.GetMinByTime()
-		if classenq != nil {
-			a.Log.Println(classenq.Title)
-			if deadline.After(classenq.EndDate) {
-				newTitle, deadline = "["+classenq.CourseName+"]"+classenq.Title, classenq.EndDate
-			}
-		}
-		report := a.crawler.Report.GetMinByTime()
-		if report != nil {
-			a.Log.Println(report.Title)
-			if deadline.After(report.EndDate) {
-				newTitle, deadline = "["+report.CourseName+"]"+report.Title, report.EndDate
-			}
-		}
-		minitest := a.crawler.Minitest.GetMinByTime()
-		if minitest != nil {
-			a.Log.Println(minitest.Title)
-			if deadline.After(minitest.EndDate) {
-				newTitle, deadline = "["+minitest.CourseName+"]"+minitest.Title, minitest.EndDate
-			}
-		}
+		a.recentTaskUpdate()
+	})
 
+	s.StartAsync()
+}
+
+func (a *App) recentTaskUpdate() {
+	now := time.Now()
+	newTitle, deadline := "", now.AddDate(1, 0, 0)
+	classenq := a.crawler.Classenq.GetMinByTime()
+	if classenq != nil {
+		a.Log.Println(classenq.Title)
+		if deadline.After(classenq.EndDate) {
+			newTitle, deadline = "["+classenq.CourseName+"]"+classenq.Title, classenq.EndDate
+		}
+	}
+	report := a.crawler.Report.GetMinByTime()
+	if report != nil {
+		a.Log.Println(report.Title)
+		if deadline.After(report.EndDate) {
+			newTitle, deadline = "["+report.CourseName+"]"+report.Title, report.EndDate
+		}
+	}
+	minitest := a.crawler.Minitest.GetMinByTime()
+	if minitest != nil {
+		a.Log.Println(minitest.Title)
+		if deadline.After(minitest.EndDate) {
+			newTitle, deadline = "["+minitest.CourseName+"]"+minitest.Title, minitest.EndDate
+		}
+	}
+
+	if newTitle == "" {
+		a.recentTaskDeadLine.Hide()
+		a.recentTaskItem.Hide()
+	} else {
+		a.recentTaskDeadLine.Show()
+		a.recentTaskItem.Show()
 		a.recentTaskDeadLine.SetTitle(fmt.Sprintf("締切まであと %s です。", func() string {
 			subTime := deadline.Sub(now)
 			h := int(subTime.Hours())
 			m := int(subTime.Minutes())
 			return fmt.Sprintf("%v時間%v分", h, m%60)
 		}()))
-
 		a.recentTaskItem.SetTitle(newTitle)
-		if deadline.Sub(now) < time.Hour*24 {
-			a.recentTaskItem.SetIcon(assets.IconAlert)
-			systray.SetTooltip("Gakujo-Google-Calendar 24時間以内に締め切りの課題があります")
-			systray.SetIcon(assets.IconGakujoAlert)
-		} else {
-			a.recentTaskItem.SetIcon(assets.IconTask)
-			systray.SetTooltip("Gakujo-Google-Calendar")
-			systray.SetIcon(assets.IconGakujo)
-		}
-	})
+	}
 
-	s.StartAsync()
+	if deadline.Sub(now) < time.Hour*24 {
+		a.recentTaskItem.SetIcon(assets.IconAlert)
+		systray.SetTooltip("Gakujo-Google-Calendar 24時間以内に締め切りの課題があります")
+		systray.SetIcon(assets.IconGakujoAlert)
+	} else {
+		a.recentTaskItem.SetIcon(assets.IconTask)
+		systray.SetTooltip("Gakujo-Google-Calendar")
+		systray.SetIcon(assets.IconGakujo)
+	}
 }
 
 func (a *App) registReport() (int, error) {
@@ -217,6 +228,22 @@ func (a *App) registAll() (int, error) {
 	a.syncButtonItem.SetTitle("更新しています...")
 	a.lastSyncItem.SetTitle("更新しています...")
 
+	retryCount := 5
+	err := a.crawler.CrawleReportRows(retryCount)
+	if err != nil {
+		return 0, err
+	}
+
+	err = a.crawler.CrawleMinitestRows(retryCount)
+	if err != nil {
+		return 0, err
+	}
+
+	err = a.crawler.CrawleClassEnqRows(retryCount)
+	if err != nil {
+		return 0, err
+	}
+
 	ReportCounter, err := a.registReport()
 	if err != nil {
 		return 0, err
@@ -234,6 +261,8 @@ func (a *App) registAll() (int, error) {
 	cntSum += ClassEnqCounter
 
 	a.updateItems()
+	a.recentTaskUpdate()
+
 	a.syncButtonItem.SetTitle("今すぐ更新する")
 	a.lastSyncItem.Enable()
 	a.syncButtonItem.Enable()

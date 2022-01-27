@@ -43,6 +43,7 @@ func NewCrawler(username, password string, opt *CrawleOption) (*Crawler, error) 
 func (c *Crawler) Start() chan error {
 	s := gocron.NewScheduler(time.Local)
 	errc := make(chan error)
+	/*
 	_, _ = s.Every(c.opt.MinitestInterval).Do(func() {
 		if err := c.CrawleMinitestRows(c.opt.RetryCount); err != nil {
 			c.Log.Println(err)
@@ -61,6 +62,7 @@ func (c *Crawler) Start() chan error {
 			errc <- err
 		}
 	})
+	*/
 	// 30分ごとにセッションを回復する
 	_, _ = s.Every(30).Minutes().Do(func() {
 		c.gc.Lock()
