@@ -6,7 +6,7 @@ import (
 	"github.com/earlgray283/gakujo-google-calendar/gakujo/model"
 )
 
-func (c *Crawler) crawleMinitestRows(retryCount int) error {
+func (c *Crawler) CrawleMinitestRows(retryCount int) error {
 	var (
 		err  error
 		rows []model.MinitestRow
@@ -33,7 +33,7 @@ func (c *Crawler) crawleMinitestRows(retryCount int) error {
 	return nil
 }
 
-func (c *Crawler) crawleReportRows(retryCount int) error {
+func (c *Crawler) CrawleReportRows(retryCount int) error {
 	var (
 		err  error
 		rows []model.ReportRow
@@ -60,7 +60,7 @@ func (c *Crawler) crawleReportRows(retryCount int) error {
 	return nil
 }
 
-func (c *Crawler) crawleClassEnqRows(retryCount int) error {
+func (c *Crawler) CrawleClassEnqRows(retryCount int) error {
 	var (
 		err  error
 		rows []model.ClassEnqRow

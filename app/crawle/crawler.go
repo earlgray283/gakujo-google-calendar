@@ -44,19 +44,19 @@ func (c *Crawler) Start() chan error {
 	s := gocron.NewScheduler(time.Local)
 	errc := make(chan error)
 	_, _ = s.Every(c.opt.MinitestInterval).Do(func() {
-		if err := c.crawleMinitestRows(c.opt.RetryCount); err != nil {
+		if err := c.CrawleMinitestRows(c.opt.RetryCount); err != nil {
 			c.Log.Println(err)
 			errc <- err
 		}
 	})
 	_, _ = s.Every(c.opt.ReportInterval).Do(func() {
-		if err := c.crawleReportRows(c.opt.RetryCount); err != nil {
+		if err := c.CrawleReportRows(c.opt.RetryCount); err != nil {
 			c.Log.Println(err)
 			errc <- err
 		}
 	})
 	_, _ = s.Every(c.opt.ClassenqInterval).Do(func() {
-		if err := c.crawleClassEnqRows(c.opt.RetryCount); err != nil {
+		if err := c.CrawleClassEnqRows(c.opt.RetryCount); err != nil {
 			c.Log.Println(err)
 			errc <- err
 		}
