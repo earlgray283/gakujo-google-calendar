@@ -194,7 +194,7 @@ func (a *App) registMinitest() (int, error) {
 		if row.EndDate.Before(now) {
 			continue
 		}
-		if row.SubmitStatus != model.UnSubmited {
+		if row.SubmitStatus == model.UnSubmited {
 			event := calendar.NewGakujoEvent("["+row.CourseName+"]"+row.Title, row.EndDate)
 			if err := calendar.AddSchedule(event, a.calendarId, a.srv); err != nil {
 				return -1, err
