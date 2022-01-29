@@ -9,6 +9,7 @@ import (
 	"regexp"
 
 	"github.com/earlgray283/gakujo-google-calendar/assets"
+	"github.com/earlgray283/gakujo-google-calendar/gakujo"
 	"github.com/skratchdot/open-golang/open"
 )
 
@@ -16,6 +17,11 @@ type AuthFormInfo struct {
 	Username  string
 	Password  string
 	Logincode string
+}
+
+type templates struct {
+	URL       string
+	ErrorHTML template.HTML
 }
 
 func GetAuthInfoFromBrowser(url string) (*AuthFormInfo, error) {
@@ -35,44 +41,39 @@ func GetAuthInfoFromBrowser(url string) (*AuthFormInfo, error) {
 	}
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		if err := t.Execute(rw, struct {
-			URL string
-		}{
-			URL: url,
-		}); err != nil {
-			http.Error(rw, fmt.Sprintf("failed to execute template: %v", err), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	mux.HandleFunc("/redirect", func(rw http.ResponseWriter, r *http.Request) {
-		if err := t.Execute(rw, struct {
-			URL string
-		}{
-			URL: url,
-		}); err != nil {
+		if err := t.Execute(rw, templates{URL: url}); err != nil {
 			http.Error(rw, fmt.Sprintf("failed to execute template: %v", err), http.StatusInternalServerError)
 			return
 		}
 	})
 
 	mux.HandleFunc("/regist", func(rw http.ResponseWriter, r *http.Request) {
-		if m, _ := regexp.MatchString("^[a-zA-Z0-9]+$", r.FormValue("username")); !m {
-			http.Redirect(rw, r, "/redirect", http.StatusMovedPermanently)
-			return
-		}
-		if m, _ := regexp.MatchString("^[a-zA-Z0-9]+$", r.FormValue("password")); !m {
-			http.Redirect(rw, r, "/redirect", http.StatusMovedPermanently)
-			return
-		}
-		if m, _ := regexp.MatchString("^[a-zA-Z0-9!-/:-@¥[-`{-~]+$", r.FormValue("logincode")); !m {
-			http.Redirect(rw, r, "/redirect", http.StatusMovedPermanently)
+		m1, _ := regexp.MatchString("^[a-zA-Z0-9]+$", r.FormValue("username"))
+		m2, _ := regexp.MatchString("^[a-zA-Z0-9]+$", r.FormValue("password"))
+		if !m1 || !m2 {
+			rw.WriteHeader(http.StatusBadRequest)
+			_ = t.Execute(rw, templates{
+				ErrorHTML: template.HTML(`<div class="alert alert-danger" role="alert">静大IDか静大パスワードの形式が正しくありません。</div>`),
+				URL:       url,
+			})
 			return
 		}
 
-		authFormInfo.Username = r.FormValue("username")
-		authFormInfo.Password = r.FormValue("password")
-		authFormInfo.Logincode = r.FormValue("logincode")
+		c := gakujo.NewClient()
+		if err := c.Login(r.FormValue("username"), r.FormValue("password")); err != nil {
+			rw.WriteHeader(http.StatusBadRequest)
+			_ = t.Execute(rw, templates{
+				ErrorHTML: template.HTML(`<div class="alert alert-danger" role="alert">静大IDか静大パスワードが間違っています。</div>`),
+				URL:       url,
+			})
+			return
+		}
+
+		authFormInfo = AuthFormInfo{
+			Username:  r.FormValue("username"),
+			Password:  r.FormValue("password"),
+			Logincode: r.FormValue("logincode"),
+		}
 
 		rw.WriteHeader(http.StatusOK)
 		_, _ = rw.Write([]byte("Registration succeed! You can close this page."))
@@ -83,6 +84,7 @@ func GetAuthInfoFromBrowser(url string) (*AuthFormInfo, error) {
 	if err := open.Run("http://localhost:8080"); err != nil {
 		return nil, err
 	}
+
 	srv.Handler = mux
 	go func() {
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
