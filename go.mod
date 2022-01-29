@@ -12,7 +12,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/api v0.65.0
 	google.golang.org/appengine v1.6.7 // indirect
@@ -22,7 +22,7 @@ require (
 )
 
 require (
-	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a
+	github.com/earlgray283/go-autostart v0.0.0-20220129045944-050955deb794
 	github.com/getlantern/systray v1.1.0
 	github.com/go-co-op/gocron v1.11.0
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
@@ -36,6 +36,7 @@ require (
 	github.com/getlantern/hex v0.0.0-20220104173244-ad7e4b9194dc // indirect
 	github.com/getlantern/hidden v0.0.0-20220104173330-f221c5a24770 // indirect
 	github.com/getlantern/ops v0.0.0-20200403153110-8476b16edcd6 // indirect
+	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect

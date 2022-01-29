@@ -3,7 +3,7 @@ package app
 import (
 	"os"
 
-	autostart "github.com/emersion/go-autostart"
+	autostart "github.com/earlgray283/go-autostart"
 	"github.com/getlantern/systray"
 )
 
