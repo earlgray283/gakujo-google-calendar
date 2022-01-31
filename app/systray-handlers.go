@@ -47,6 +47,12 @@ func (a *App) OnReady() {
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
 
+	a.unSubmitedRows = make([]*systray.MenuItem, 100)
+	for i := range a.unSubmitedRows {
+		a.unSubmitedRows[i] = a.unSubmittedItem.AddSubMenuItem("", "")
+		a.unSubmitedRows[i].Hide()
+	}
+
 	// スケジューラ
 	autoStarterErrC := autoStarter.StartAsync()
 	registerErrC := a.startRegisterAsync()
@@ -328,6 +334,7 @@ func (a *App) updateItems() {
 	a.lastSyncItem.SetTitle("最終更新: " + timeNow)
 	a.lastSyncItem.SetTooltip("最終更新: " + timeNow)
 	a.syncButtonItem.SetTitle("今すぐ更新する")
+	a.addSubMenuItem()
 }
 
 func (a *App) countUnSubmitted() int {
@@ -358,4 +365,47 @@ func (a *App) countUnSubmitted() int {
 		}
 	}
 	return cnt
+}
+
+func (a *App) addSubMenuItem() {
+	for _, row := range a.unSubmitedRows {
+		row.Hide()
+	}
+
+	reportRows, _ := a.crawler.Report.Get()
+	minitestRows, _ := a.crawler.Minitest.Get()
+	classEnqRows, _ := a.crawler.Classenq.Get()
+
+	cnt := 0
+
+	for _, row := range reportRows {
+		if row.EndDate.After(time.Now()) {
+			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
+				a.unSubmitedRows[cnt].SetTitle("[" + row.CourseName + "]" + row.Title)
+				a.unSubmitedRows[cnt].SetTooltip(row.Title)
+				a.unSubmitedRows[cnt].Show()
+				cnt++
+			}
+		}
+	}
+	for _, row := range minitestRows {
+		if row.SubmitStatus == "未提出" {
+			if time.Now().Before(row.EndDate) {
+				a.unSubmitedRows[cnt].SetTitle("[" + row.CourseName + "]" + row.Title)
+				a.unSubmitedRows[cnt].SetTooltip(row.Title)
+				a.unSubmitedRows[cnt].Show()
+				cnt++
+			}
+		}
+	}
+	for _, row := range classEnqRows {
+		if row.SubmitStatus == "未提出" {
+			if time.Now().Before(row.EndDate) {
+				a.unSubmitedRows[cnt].SetTitle("[" + row.CourseName + "]" + row.Title)
+				a.unSubmitedRows[cnt].SetTooltip(row.Title)
+				a.unSubmitedRows[cnt].Show()
+				cnt++
+			}
+		}
+	}
 }
