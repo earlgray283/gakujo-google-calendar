@@ -6,10 +6,9 @@ darwin-amd64: gakujo-google-calendar_darwin_amd64
 darwin-arm64: gakujo-google-calendar_darwin_arm64
 
 gakujo-google-calendar_windows_amd64.exe: credentials.json
-	CGO_ENABLED=1 \
+	CGO_ENABLED=0 \
 	GOOS=windows \
 	GOARCH=amd64 \
-	CC=x86_64-w64-mingw32-gcc \
 	go build \
 		-ldflags \
 		-H=windowsgui \
