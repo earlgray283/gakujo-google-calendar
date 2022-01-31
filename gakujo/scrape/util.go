@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"time"
+	_ "time/tzdata"
 )
 
 func replaceAndTrim(s string) string {
