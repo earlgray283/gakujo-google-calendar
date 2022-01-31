@@ -47,10 +47,17 @@ func (a *App) OnReady() {
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
 
-	a.unSubmitedRows = make([]*systray.MenuItem, 100)
+	a.unSubmitedRows = make([][]*systray.MenuItem, 100)
+	for i := 0; i < 100; i++ {
+		a.unSubmitedRows[i] = make([]*systray.MenuItem, 3)
+	}
 	for i := range a.unSubmitedRows {
-		a.unSubmitedRows[i] = a.unSubmittedItem.AddSubMenuItem("", "")
-		a.unSubmitedRows[i].Hide()
+		a.unSubmitedRows[i][0] = a.unSubmittedItem.AddSubMenuItem("", "")
+		a.unSubmitedRows[i][1] = a.unSubmitedRows[i][0].AddSubMenuItem("", "")
+		a.unSubmitedRows[i][2] = a.unSubmitedRows[i][0].AddSubMenuItem("", "")
+		//a.unSubmitedRows[i][2].Hide()
+		//a.unSubmitedRows[i][1].Hide()
+		//a.unSubmitedRows[i][0].Hide()
 	}
 
 	// スケジューラ
@@ -293,9 +300,9 @@ func (a *App) updateAll() (int, error) {
 		return 0, err
 	}
 
-	a.updateItems()
-
 	a.updateRecentTask()
+
+	a.updateItems()
 
 	return count, nil
 }
@@ -334,7 +341,7 @@ func (a *App) updateItems() {
 	a.lastSyncItem.SetTitle("最終更新: " + timeNow)
 	a.lastSyncItem.SetTooltip("最終更新: " + timeNow)
 	a.syncButtonItem.SetTitle("今すぐ更新する")
-	a.addSubMenuItem()
+	a.updateUnsubmittdList()
 }
 
 func (a *App) countUnSubmitted() int {
@@ -367,45 +374,72 @@ func (a *App) countUnSubmitted() int {
 	return cnt
 }
 
-func (a *App) addSubMenuItem() {
+func (a *App) updateUnsubmittdList() {
+	/*
 	for _, row := range a.unSubmitedRows {
-		row.Hide()
+		//row[0].Hide()
+		//row[1].Hide()
+		//row[2].Hide()
 	}
-
+	*/
 	reportRows, _ := a.crawler.Report.Get()
-	minitestRows, _ := a.crawler.Minitest.Get()
-	classEnqRows, _ := a.crawler.Classenq.Get()
+	//minitestRows, _ := a.crawler.Minitest.Get()
+	//classEnqRows, _ := a.crawler.Classenq.Get()
 
 	cnt := 0
 
 	for _, row := range reportRows {
 		if row.EndDate.After(time.Now()) {
 			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
-				a.unSubmitedRows[cnt].SetTitle("[" + row.CourseName + "]" + row.Title)
-				a.unSubmitedRows[cnt].SetTooltip(row.Title)
-				a.unSubmitedRows[cnt].Show()
+				a.unSubmitedRows[cnt][0].SetTitle("[" + row.CourseName + "]" + row.Title)
+				a.unSubmitedRows[cnt][0].SetTooltip(row.Title)
+				a.unSubmitedRows[cnt][1].SetTitle("締め切り: " + row.EndDate.Format("2006-01-02 15:04:05"))
+				a.unSubmitedRows[cnt][2].SetTitle("締め切りまであと " + calcUntilDeadline(row.EndDate) + " です。")
+				a.unSubmitedRows[cnt][0].Show()
 				cnt++
 			}
 		}
 	}
-	for _, row := range minitestRows {
-		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) {
-				a.unSubmitedRows[cnt].SetTitle("[" + row.CourseName + "]" + row.Title)
-				a.unSubmitedRows[cnt].SetTooltip(row.Title)
-				a.unSubmitedRows[cnt].Show()
-				cnt++
+	/*
+		for _, row := range minitestRows {
+			if row.SubmitStatus == "未提出" {
+				if time.Now().Before(row.EndDate) {
+					a.unSubmitedRows[cnt][0].SetTitle("[" + row.CourseName + "]" + row.Title)
+					a.unSubmitedRows[cnt][0].SetTooltip(row.Title)
+					a.unSubmitedRows[cnt][1].SetTitle("締め切り: " + row.EndDate.Format("2006-01-02 15:04:05"))
+					a.unSubmitedRows[cnt][2].SetTitle("締め切りまであと " + calcUntilDeadline(row.EndDate) + " です。")
+					a.unSubmitedRows[cnt][0].Show()
+					//a.unSubmitedRows[cnt][1].Show()
+					//a.unSubmitedRows[cnt][2].Show()
+					cnt++
+				}
 			}
 		}
-	}
-	for _, row := range classEnqRows {
-		if row.SubmitStatus == "未提出" {
-			if time.Now().Before(row.EndDate) {
-				a.unSubmitedRows[cnt].SetTitle("[" + row.CourseName + "]" + row.Title)
-				a.unSubmitedRows[cnt].SetTooltip(row.Title)
-				a.unSubmitedRows[cnt].Show()
-				cnt++
+		for _, row := range classEnqRows {
+			if row.SubmitStatus == "未提出" {
+				if time.Now().Before(row.EndDate) {
+					a.unSubmitedRows[cnt][0].SetTitle("[" + row.CourseName + "]" + row.Title)
+					a.unSubmitedRows[cnt][0].SetTooltip(row.Title)
+					a.unSubmitedRows[cnt][1].SetTitle("締め切り: " + row.EndDate.Format("2006-01-02 15:04:05"))
+					a.unSubmitedRows[cnt][2].SetTitle("締め切りまであと " + calcUntilDeadline(row.EndDate) + " です。")
+					a.unSubmitedRows[cnt][0].Show()
+					//a.unSubmitedRows[cnt][1].Show()
+					//a.unSubmitedRows[cnt][2].Show()
+					cnt++
+				}
 			}
 		}
+	*/
+}
+
+func calcUntilDeadline(deadline time.Time) string {
+	now := time.Now()
+	subTime := deadline.Sub(now)
+	h := int(subTime.Hours())
+	m := int(subTime.Minutes())
+	if 24 < h {
+		return fmt.Sprintf("%v日 %v時間", h/24, h%24)
+	} else {
+		return fmt.Sprintf("%v時間 %v分", h, m%60)
 	}
 }
