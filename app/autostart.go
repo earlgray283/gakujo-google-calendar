@@ -41,11 +41,9 @@ func (a *AutoStarter) StartAsync() chan error {
 
 func (a *AutoStarter) setTitle() {
 	if a.app.IsEnabled() {
-		a.item.SetTitle("自動起動")
 		a.item.Check()
 		a.item.SetTooltip("autostart: enabled")
 	} else {
-		a.item.SetTitle("自動起動")
 		a.item.Uncheck()
 		a.item.SetTooltip("autostart: disabled")
 	}
