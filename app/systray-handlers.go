@@ -432,9 +432,8 @@ func calcUntilDeadline(deadline time.Time) string {
 	m := int(subTime.Minutes())
 	if 24 < h {
 		return fmt.Sprintf("%v日 %v時間", h/24, h%24)
-	} else {
-		return fmt.Sprintf("%v時間 %v分", h, m%60)
 	}
+	return fmt.Sprintf("%v時間 %v分", h, m%60)
 }
 
 func(a *App) unSubmittedRowsInit () {
