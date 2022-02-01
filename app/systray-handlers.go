@@ -365,13 +365,13 @@ func (a *App) countUnSubmitted() int {
 
 func (a *App) updateUnsubmittdList() {
 	/*
-	for i:=0; i<100; i++ {
-		a.unSubmittedRows[i][2].Hide()
-		a.unSubmittedRows[i][1].Hide()
-	}
-	for i:=0; i<100; i++ {
-		a.unSubmittedRows[i][0].Hide()
-	}
+		for i:=0; i<100; i++ {
+			a.unSubmittedRows[i][2].Hide()
+			a.unSubmittedRows[i][1].Hide()
+		}
+		for i:=0; i<100; i++ {
+			a.unSubmittedRows[i][0].Hide()
+		}
 	*/
 	reportRows, _ := a.crawler.Report.Get()
 	//minitestRows, _ := a.crawler.Minitest.Get()
@@ -436,14 +436,14 @@ func calcUntilDeadline(deadline time.Time) string {
 	return fmt.Sprintf("%v時間 %v分", h, m%60)
 }
 
-func(a *App) unSubmittedRowsInit () {
+func (a *App) unSubmittedRowsInit() {
 	n := 100
 	a.unSubmittedRows = make([][]*systray.MenuItem, n)
-	for i:=0; i<n; i++ {
+	for i := 0; i < n; i++ {
 		a.unSubmittedRows[i] = make([]*systray.MenuItem, 3)
 		a.unSubmittedRows[i][0] = a.unSubmittedItem.AddSubMenuItem("root", "root")
-		a.unSubmittedRows[i][1] = a.unSubmittedRows[i][0].AddSubMenuItem("child-1","child-1")
-		a.unSubmittedRows[i][2] = a.unSubmittedRows[i][0].AddSubMenuItem("child-2","child-2")
+		a.unSubmittedRows[i][1] = a.unSubmittedRows[i][0].AddSubMenuItem("child-1", "child-1")
+		a.unSubmittedRows[i][2] = a.unSubmittedRows[i][0].AddSubMenuItem("child-2", "child-2")
 		a.unSubmittedRows[i][1].Hide()
 		a.unSubmittedRows[i][2].Hide()
 		//a.unSubmittedRows[i][0].Hide() <-やはりこれが怒られる
