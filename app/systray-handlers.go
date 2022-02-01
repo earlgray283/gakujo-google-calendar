@@ -176,7 +176,7 @@ func (a *App) updateRecentTask() {
 }
 
 func (a *App) registReport() (int, error) {
-	reportRows, _ := a.crawler.Report.Get()
+	reportRows := a.crawler.Report.Get()
 	now := time.Now()
 	count := 0
 	for _, row := range reportRows {
@@ -197,7 +197,7 @@ func (a *App) registReport() (int, error) {
 func (a *App) registMinitest() (int, error) {
 	count := 0
 	now := time.Now()
-	minitestRows, _ := a.crawler.Minitest.Get()
+	minitestRows := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
 		if row.EndDate.Before(now) {
 			continue
@@ -215,7 +215,7 @@ func (a *App) registMinitest() (int, error) {
 
 func (a *App) registClassEnq() (int, error) {
 	count := 0
-	classEnqRows, _ := a.crawler.Classenq.Get()
+	classEnqRows := a.crawler.Classenq.Get()
 	now := time.Now()
 	for _, row := range classEnqRows {
 		if row.EndDate.Before(now) {
@@ -336,10 +336,7 @@ func (a *App) updateItems() {
 
 func (a *App) countUnSubmitted() int {
 	cnt := 0
-	reportRows, _ := a.crawler.Report.Get()
-	minitestRows, _ := a.crawler.Minitest.Get()
-	classEnqRows, _ := a.crawler.Classenq.Get()
-
+	reportRows := a.crawler.Report.Get()
 	for _, row := range reportRows {
 		if row.EndDate.After(time.Now()) {
 			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
@@ -347,6 +344,7 @@ func (a *App) countUnSubmitted() int {
 			}
 		}
 	}
+	minitestRows := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
@@ -354,6 +352,7 @@ func (a *App) countUnSubmitted() int {
 			}
 		}
 	}
+	classEnqRows := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
@@ -368,13 +367,10 @@ func (a *App) updateUnsubmittdList() {
 	for i := 0; i < 100; i++ {
 		a.unSubmittedRows[i].Hide()
 	}
-	reportRows, _ := a.crawler.Report.Get()
-	minitestRows, _ := a.crawler.Minitest.Get()
-	classEnqRows, _ := a.crawler.Classenq.Get()
 
 	taskRows := make([]taskRow, 0)
 	cnt := 0
-
+	reportRows := a.crawler.Report.Get()
 	for _, row := range reportRows {
 		if row.EndDate.After(time.Now()) {
 			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
@@ -382,6 +378,7 @@ func (a *App) updateUnsubmittdList() {
 			}
 		}
 	}
+	minitestRows := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
@@ -389,6 +386,7 @@ func (a *App) updateUnsubmittdList() {
 			}
 		}
 	}
+	classEnqRows := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
