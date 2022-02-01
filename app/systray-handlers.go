@@ -47,18 +47,7 @@ func (a *App) OnReady() {
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
 
-	a.unSubmitedRows = make([][]*systray.MenuItem, 100)
-	for i := 0; i < 100; i++ {
-		a.unSubmitedRows[i] = make([]*systray.MenuItem, 3)
-	}
-	for i := range a.unSubmitedRows {
-		a.unSubmitedRows[i][0] = a.unSubmittedItem.AddSubMenuItem("", "")
-		a.unSubmitedRows[i][1] = a.unSubmitedRows[i][0].AddSubMenuItem("", "")
-		a.unSubmitedRows[i][2] = a.unSubmitedRows[i][0].AddSubMenuItem("", "")
-		//a.unSubmitedRows[i][2].Hide()
-		//a.unSubmitedRows[i][1].Hide()
-		//a.unSubmitedRows[i][0].Hide()
-	}
+	a.unSubmittedRowsInit()
 
 	// スケジューラ
 	autoStarterErrC := autoStarter.StartAsync()
@@ -376,10 +365,12 @@ func (a *App) countUnSubmitted() int {
 
 func (a *App) updateUnsubmittdList() {
 	/*
-	for _, row := range a.unSubmitedRows {
-		//row[0].Hide()
-		//row[1].Hide()
-		//row[2].Hide()
+	for i:=0; i<100; i++ {
+		a.unSubmittedRows[i][2].Hide()
+		a.unSubmittedRows[i][1].Hide()
+	}
+	for i:=0; i<100; i++ {
+		a.unSubmittedRows[i][0].Hide()
 	}
 	*/
 	reportRows, _ := a.crawler.Report.Get()
@@ -391,11 +382,13 @@ func (a *App) updateUnsubmittdList() {
 	for _, row := range reportRows {
 		if row.EndDate.After(time.Now()) {
 			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
-				a.unSubmitedRows[cnt][0].SetTitle("[" + row.CourseName + "]" + row.Title)
-				a.unSubmitedRows[cnt][0].SetTooltip(row.Title)
-				a.unSubmitedRows[cnt][1].SetTitle("締め切り: " + row.EndDate.Format("2006-01-02 15:04:05"))
-				a.unSubmitedRows[cnt][2].SetTitle("締め切りまであと " + calcUntilDeadline(row.EndDate) + " です。")
-				a.unSubmitedRows[cnt][0].Show()
+				a.unSubmittedRows[cnt][0].SetTitle("[" + row.CourseName + "]" + row.Title)
+				a.unSubmittedRows[cnt][0].SetTooltip(row.Title)
+				a.unSubmittedRows[cnt][1].SetTitle("締め切り: " + row.EndDate.Format("2006-01-02 15:04:05"))
+				a.unSubmittedRows[cnt][2].SetTitle("締め切りまであと " + calcUntilDeadline(row.EndDate) + " です。")
+				a.unSubmittedRows[cnt][0].Show()
+				a.unSubmittedRows[cnt][1].Show()
+				a.unSubmittedRows[cnt][2].Show()
 				cnt++
 			}
 		}
@@ -443,3 +436,28 @@ func calcUntilDeadline(deadline time.Time) string {
 		return fmt.Sprintf("%v時間 %v分", h, m%60)
 	}
 }
+
+func(a *App) unSubmittedRowsInit () {
+	n := 100
+	a.unSubmittedRows = make([][]*systray.MenuItem, n)
+	for i:=0; i<n; i++ {
+		a.unSubmittedRows[i] = make([]*systray.MenuItem, 3)
+		a.unSubmittedRows[i][0] = a.unSubmittedItem.AddSubMenuItem("root", "root")
+		a.unSubmittedRows[i][1] = a.unSubmittedRows[i][0].AddSubMenuItem("child-1","child-1")
+		a.unSubmittedRows[i][2] = a.unSubmittedRows[i][0].AddSubMenuItem("child-2","child-2")
+		a.unSubmittedRows[i][1].Hide()
+		a.unSubmittedRows[i][2].Hide()
+		//a.unSubmittedRows[i][0].Hide() <-やはりこれが怒られる
+	}
+}
+
+/*
+subMenuItems := make([]*systray.MenuItem, 100)
+systray.SetTitle("Test")
+root := systray.AddMenuItem("Root", "")
+
+for i := range subMenuItems {
+    subMenuItems[i] = root.AddSubMenuItem("Child"+strconv.Itoa(i), "")
+    subMenuItems[i].Hide()
+}
+*/
