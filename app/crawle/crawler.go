@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"github.com/earlgray283/gakujo-google-calendar/gakujo"
 	"github.com/earlgray283/gakujo-google-calendar/gakujo/model"
 	"github.com/go-co-op/gocron"
@@ -30,7 +31,10 @@ type GakujoClient struct {
 
 func NewCrawler(username, password string, opt *CrawleOption) (*Crawler, error) {
 	gc := gakujo.NewClient()
-	if err := gc.Login(username, password); err != nil {
+	err := util.DoWithRetry(func() error {
+		return gc.Login(username, password)
+	}, 5, 5*time.Second)
+	if err != nil {
 		return nil, err
 	}
 	wgc := &GakujoClient{c: gc}
