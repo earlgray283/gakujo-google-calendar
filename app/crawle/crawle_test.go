@@ -44,12 +44,9 @@ func TestCrawle(t *testing.T) {
 		case <-timerC:
 			goto L1
 		}
-		_, rt := crawler.Report.Get()
-		_, mt := crawler.Minitest.Get()
-		_, ct := crawler.Classenq.Get()
-		rm[rt] = struct{}{}
-		mm[mt] = struct{}{}
-		cm[ct] = struct{}{}
+		rm[crawler.Report.UpdatedAt()] = struct{}{}
+		mm[crawler.Minitest.UpdatedAt()] = struct{}{}
+		cm[crawler.Classenq.UpdatedAt()] = struct{}{}
 	}
 L1:
 
