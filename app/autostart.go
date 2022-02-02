@@ -15,7 +15,7 @@ type AutoStarter struct {
 func NewAutoStartApp() *AutoStarter {
 	execPath, _ := os.Executable()
 	as := &AutoStarter{
-		item: systray.AddMenuItem("自動更新", ""),
+		item: systray.AddMenuItem("自動起動", ""),
 		app: &autostart.App{
 			Name: "gakujo-google-calendar",
 			Exec: []string{execPath},
