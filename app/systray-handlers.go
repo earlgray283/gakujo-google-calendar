@@ -48,7 +48,7 @@ func (a *App) OnReady() {
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
 
-	a.unSubmittedRowsInit()
+	a.initializeUnSubmittedRows()
 
 	// スケジューラ
 	autoStarterErrC := autoStarter.StartAsync()
@@ -114,6 +114,7 @@ func (a *App) startRecentTaskUpdaterAsync() {
 
 	_, _ = s.Every(time.Minute).Do(func() {
 		a.updateRecentTask()
+		//a.updateUnsubmittedList()
 	})
 
 	s.StartAsync()
@@ -331,7 +332,7 @@ func (a *App) updateItems() {
 	a.lastSyncItem.SetTitle("最終更新: " + timeNow)
 	a.lastSyncItem.SetTooltip("最終更新: " + timeNow)
 	a.syncButtonItem.SetTitle("今すぐ更新する")
-	a.updateUnsubmittdList()
+	a.updateUnsubmittedList()
 }
 
 func (a *App) countUnSubmitted() int {
@@ -363,8 +364,8 @@ func (a *App) countUnSubmitted() int {
 	return cnt
 }
 
-func (a *App) updateUnsubmittdList() {
-	for i := 0; i < 100; i++ {
+func (a *App) updateUnsubmittedList() {
+	for i, _ := range a.unSubmittedRows {
 		a.unSubmittedRows[i].Hide()
 	}
 
@@ -420,10 +421,10 @@ func calcUntilDeadline(deadline time.Time) string {
 	return fmt.Sprintf("%v時間%v分", h, m%60)
 }
 
-func (a *App) unSubmittedRowsInit() {
+func (a *App) initializeUnSubmittedRows() {
 	n := 100
 	a.unSubmittedRows = make([]*systray.MenuItem, n)
-	for i := 0; i < n; i++ {
+	for i, _ := range a.unSubmittedRows {
 		a.unSubmittedRows[i] = a.unSubmittedItem.AddSubMenuItem("", "")
 		a.unSubmittedRows[i].Hide()
 	}
