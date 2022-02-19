@@ -114,7 +114,7 @@ func (a *App) startRecentTaskUpdaterAsync() {
 
 	_, _ = s.Every(time.Minute).Do(func() {
 		a.updateRecentTask()
-		//a.updateUnsubmittedList()
+		a.updateItems()
 	})
 
 	s.StartAsync()
@@ -332,6 +332,13 @@ func (a *App) updateItems() {
 	a.lastSyncItem.SetTitle("最終更新: " + timeNow)
 	a.lastSyncItem.SetTooltip("最終更新: " + timeNow)
 	a.syncButtonItem.SetTitle("今すぐ更新する")
+	if cnt == "0" {
+		a.recentTaskItem.SetTitle("未提出の課題はありません。")
+		a.unSubmittedItem.SetTitle("未提出の課題はありません。")
+		a.unSubmittedItem.Disable()
+	} else {
+		a.unSubmittedItem.Enable()
+	}
 	a.updateUnsubmittedList()
 }
 
