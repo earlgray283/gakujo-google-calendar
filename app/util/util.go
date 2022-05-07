@@ -29,3 +29,15 @@ func DefaultCacheDir() string {
 	}
 	return cacheDirPath
 }
+
+func DoWithRetry(f func() error, retryCount int, interval time.Duration) error {
+	var err error = nil
+	for i := 0; i < retryCount; i++ {
+		err = f()
+		if err == nil {
+			break
+		}
+		time.Sleep(interval)
+	}
+	return err
+}

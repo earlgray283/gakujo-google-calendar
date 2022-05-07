@@ -7,7 +7,6 @@ import (
 
 	"github.com/earlgray283/gakujo-google-calendar/app/crawle"
 	mycalendar "github.com/earlgray283/gakujo-google-calendar/app/google-calendar-api"
-	"github.com/earlgray283/gakujo-google-calendar/app/util"
 	"github.com/getlantern/systray"
 	calendar "google.golang.org/api/calendar/v3"
 )
@@ -29,15 +28,15 @@ type App struct {
 	calendarId string
 }
 
-func NewApp(crawler *crawle.Crawler, srv *calendar.Service) (*App, error) {
-	appLogPath := filepath.Join(util.DefaultCacheDir(), FmtAppLogFile)
+func NewApp(crawler *crawle.Crawler, srv *calendar.Service, logDirPath string) (*App, error) {
+	appLogPath := filepath.Join(logDirPath, FmtAppLogFile)
 	appFile, err := os.Create(appLogPath)
 	if err != nil {
 		return nil, err
 	}
 	logger := log.New(appFile, "", log.LstdFlags)
 
-	crawlerLogPath := filepath.Join(util.DefaultCacheDir(), FmtCrawlerLogFile)
+	crawlerLogPath := filepath.Join(logDirPath, FmtCrawlerLogFile)
 	crawlerFile, err := os.Create(crawlerLogPath)
 	if err != nil {
 		return nil, err
