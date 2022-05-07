@@ -25,10 +25,16 @@ type ClassEnqStorage struct {
 	updatedAt time.Time
 }
 
-func (s *MinitestStorage) Get() ([]model.MinitestRow, time.Time) {
+func (s *MinitestStorage) UpdatedAt() time.Time {
 	s.Lock()
 	defer s.Unlock()
-	return s.rows, s.updatedAt
+	return s.updatedAt
+}
+
+func (s *MinitestStorage) Get() []model.MinitestRow {
+	s.Lock()
+	defer s.Unlock()
+	return s.rows
 }
 
 func (s *MinitestStorage) GetWithFilter(f func(*model.MinitestRow) bool) []model.MinitestRow {
@@ -60,10 +66,16 @@ func (s *MinitestStorage) GetMinByTime() *model.MinitestRow {
 	return &min
 }
 
-func (s *ReportStorage) Get() ([]model.ReportRow, time.Time) {
+func (s *ReportStorage) UpdatedAt() time.Time {
 	s.Lock()
 	defer s.Unlock()
-	return s.rows, s.updatedAt
+	return s.updatedAt
+}
+
+func (s *ReportStorage) Get() []model.ReportRow {
+	s.Lock()
+	defer s.Unlock()
+	return s.rows
 }
 
 func (s *ReportStorage) GetWithFilter(f func(*model.ReportRow) bool) []model.ReportRow {
@@ -96,10 +108,16 @@ func (s *ReportStorage) GetMinByTime() *model.ReportRow {
 	return &min
 }
 
-func (s *ClassEnqStorage) Get() ([]model.ClassEnqRow, time.Time) {
+func (s *ClassEnqStorage) UpdatedAt() time.Time {
 	s.Lock()
 	defer s.Unlock()
-	return s.rows, s.updatedAt
+	return s.updatedAt
+}
+
+func (s *ClassEnqStorage) Get() []model.ClassEnqRow {
+	s.Lock()
+	defer s.Unlock()
+	return s.rows
 }
 
 func (s *ClassEnqStorage) GetWithFilter(f func(*model.ClassEnqRow) bool) []model.ClassEnqRow {

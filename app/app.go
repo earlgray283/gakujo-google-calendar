@@ -25,6 +25,8 @@ type App struct {
 	unSubmittedItem    *systray.MenuItem
 	syncButtonItem     *systray.MenuItem
 
+	unSubmittedRows []*systray.MenuItem
+
 	calendarId string
 }
 

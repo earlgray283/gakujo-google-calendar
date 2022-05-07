@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -46,6 +47,8 @@ func (a *App) OnReady() {
 
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("終了", "アプリケーションを終了する")
+
+	a.initializeUnSubmittedRows()
 
 	// スケジューラ
 	autoStarterErrC := autoStarter.StartAsync()
@@ -111,6 +114,7 @@ func (a *App) startRecentTaskUpdaterAsync() {
 
 	_, _ = s.Every(time.Minute).Do(func() {
 		a.updateRecentTask()
+		a.updateItems()
 	})
 
 	s.StartAsync()
@@ -151,7 +155,11 @@ func (a *App) updateRecentTask() {
 			subTime := deadline.Sub(now)
 			h := int(subTime.Hours())
 			m := int(subTime.Minutes())
-			return fmt.Sprintf("%v時間 %v分", h, m%60)
+			if 24 < h {
+				return fmt.Sprintf("%v日 %v時間", h/24, h%24)
+			} else {
+				return fmt.Sprintf("%v時間 %v分", h, m%60)
+			}
 		}()))
 		a.recentTaskItem.SetTitle(newTitle)
 	}
@@ -165,10 +173,11 @@ func (a *App) updateRecentTask() {
 		systray.SetTooltip("Gakujo-Google-Calendar")
 		systray.SetIcon(assets.IconGakujo)
 	}
+
 }
 
 func (a *App) registReport() (int, error) {
-	reportRows, _ := a.crawler.Report.Get()
+	reportRows := a.crawler.Report.Get()
 	now := time.Now()
 	count := 0
 	for _, row := range reportRows {
@@ -189,7 +198,7 @@ func (a *App) registReport() (int, error) {
 func (a *App) registMinitest() (int, error) {
 	count := 0
 	now := time.Now()
-	minitestRows, _ := a.crawler.Minitest.Get()
+	minitestRows := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
 		if row.EndDate.Before(now) {
 			continue
@@ -207,7 +216,7 @@ func (a *App) registMinitest() (int, error) {
 
 func (a *App) registClassEnq() (int, error) {
 	count := 0
-	classEnqRows, _ := a.crawler.Classenq.Get()
+	classEnqRows := a.crawler.Classenq.Get()
 	now := time.Now()
 	for _, row := range classEnqRows {
 		if row.EndDate.Before(now) {
@@ -282,9 +291,9 @@ func (a *App) updateAll() (int, error) {
 		return 0, err
 	}
 
-	a.updateItems()
-
 	a.updateRecentTask()
+
+	a.updateItems()
 
 	return count, nil
 }
@@ -323,14 +332,19 @@ func (a *App) updateItems() {
 	a.lastSyncItem.SetTitle("最終更新: " + timeNow)
 	a.lastSyncItem.SetTooltip("最終更新: " + timeNow)
 	a.syncButtonItem.SetTitle("今すぐ更新する")
+	if cnt == "0" {
+		a.recentTaskItem.SetTitle("未提出の課題はありません。")
+		a.unSubmittedItem.SetTitle("未提出の課題はありません。")
+		a.unSubmittedItem.Disable()
+	} else {
+		a.unSubmittedItem.Enable()
+	}
+	a.updateUnsubmittedList()
 }
 
 func (a *App) countUnSubmitted() int {
 	cnt := 0
-	reportRows, _ := a.crawler.Report.Get()
-	minitestRows, _ := a.crawler.Minitest.Get()
-	classEnqRows, _ := a.crawler.Classenq.Get()
-
+	reportRows := a.crawler.Report.Get()
 	for _, row := range reportRows {
 		if row.EndDate.After(time.Now()) {
 			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
@@ -338,6 +352,7 @@ func (a *App) countUnSubmitted() int {
 			}
 		}
 	}
+	minitestRows := a.crawler.Minitest.Get()
 	for _, row := range minitestRows {
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
@@ -345,6 +360,7 @@ func (a *App) countUnSubmitted() int {
 			}
 		}
 	}
+	classEnqRows := a.crawler.Classenq.Get()
 	for _, row := range classEnqRows {
 		if row.SubmitStatus == "未提出" {
 			if time.Now().Before(row.EndDate) {
@@ -353,4 +369,76 @@ func (a *App) countUnSubmitted() int {
 		}
 	}
 	return cnt
+}
+
+func (a *App) updateUnsubmittedList() {
+	for i, _ := range a.unSubmittedRows {
+		a.unSubmittedRows[i].Hide()
+	}
+
+	taskRows := make([]taskRow, 0)
+	cnt := 0
+	reportRows := a.crawler.Report.Get()
+	for _, row := range reportRows {
+		if row.EndDate.After(time.Now()) {
+			if row.LastSubmitDate.String() == dateTimeNotSubmitted {
+				taskRows = append(taskRows, taskRow{row.CourseName, row.Title, row.EndDate})
+			}
+		}
+	}
+	minitestRows := a.crawler.Minitest.Get()
+	for _, row := range minitestRows {
+		if row.SubmitStatus == "未提出" {
+			if time.Now().Before(row.EndDate) {
+				taskRows = append(taskRows, taskRow{row.CourseName, row.Title, row.EndDate})
+			}
+		}
+	}
+	classEnqRows := a.crawler.Classenq.Get()
+	for _, row := range classEnqRows {
+		if row.SubmitStatus == "未提出" {
+			if time.Now().Before(row.EndDate) {
+				taskRows = append(taskRows, taskRow{row.CourseName, row.Title, row.EndDate})
+			}
+		}
+	}
+
+	sort.Slice(taskRows, func(i, j int) bool { return taskRows[i].deadLine.Before(taskRows[j].deadLine) })
+
+	cnt = 0
+	for _, row := range taskRows {
+		a.unSubmittedRows[cnt].SetTitle("[" + row.courseName + "]" + row.title)
+		a.unSubmittedRows[cnt+1].SetTitle("提出期限: " + row.deadLine.Format("2006-01-02 15:04") + " (あと " + calcUntilDeadline(row.deadLine) + ")")
+		a.unSubmittedRows[cnt+1].Disable()
+		a.unSubmittedRows[cnt].Show()
+		a.unSubmittedRows[cnt+1].Show()
+		cnt += 2
+	}
+
+}
+
+func calcUntilDeadline(deadline time.Time) string {
+	now := time.Now()
+	subTime := deadline.Sub(now)
+	h := int(subTime.Hours())
+	m := int(subTime.Minutes())
+	if 24 < h {
+		return fmt.Sprintf("%v日%v時間", h/24, h%24)
+	}
+	return fmt.Sprintf("%v時間%v分", h, m%60)
+}
+
+func (a *App) initializeUnSubmittedRows() {
+	n := 100
+	a.unSubmittedRows = make([]*systray.MenuItem, n)
+	for i, _ := range a.unSubmittedRows {
+		a.unSubmittedRows[i] = a.unSubmittedItem.AddSubMenuItem("", "")
+		a.unSubmittedRows[i].Hide()
+	}
+}
+
+type taskRow struct {
+	courseName string
+	title      string
+	deadLine   time.Time
 }

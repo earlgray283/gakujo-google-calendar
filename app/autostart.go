@@ -15,7 +15,7 @@ type AutoStarter struct {
 func NewAutoStartApp() *AutoStarter {
 	execPath, _ := os.Executable()
 	as := &AutoStarter{
-		item: systray.AddMenuItem("", ""),
+		item: systray.AddMenuItem("自動起動", ""),
 		app: &autostart.App{
 			Name: "gakujo-google-calendar",
 			Exec: []string{execPath},
@@ -41,10 +41,10 @@ func (a *AutoStarter) StartAsync() chan error {
 
 func (a *AutoStarter) setTitle() {
 	if a.app.IsEnabled() {
-		a.item.SetTitle("自動起動をオフ")
+		a.item.Check()
 		a.item.SetTooltip("autostart: enabled")
 	} else {
-		a.item.SetTitle("自動起動をオン")
+		a.item.Uncheck()
 		a.item.SetTooltip("autostart: disabled")
 	}
 }
